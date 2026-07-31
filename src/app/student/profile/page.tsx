@@ -25,52 +25,52 @@ export default function StudentProfilePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">My Profile</h1>
-        <p className="text-slate-500 mt-1">Manage your personal information and contact details.</p>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">My Profile</h1>
+        <p className="text-slate-500 mt-1 font-medium">Manage your personal information and contact details.</p>
       </div>
 
-      <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm max-w-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center text-xl">
-            <UserCircle className="w-6 h-6 mr-2 text-blue-600" />
+      <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl max-w-3xl overflow-hidden">
+        <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4 px-6 pt-6">
+          <CardTitle className="flex items-center text-slate-800 text-lg">
+            <UserCircle className="w-5 h-5 mr-2 text-blue-600" />
             Personal Information
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2 col-span-2">
-              <Label>Full Name</Label>
-              <Input value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
+        <CardContent className="p-6 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Full Name</Label>
+              <Input className="h-11 rounded-lg border-slate-200 focus-visible:ring-blue-500/20 text-slate-900 font-medium" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label>Student ID (Read-only)</Label>
-              <Input value={formData.studentId || ''} disabled className="bg-slate-50" />
+              <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center justify-between">Student ID <span className="text-[10px] text-slate-400 font-medium lowercase">Read-only</span></Label>
+              <Input value={formData.studentId || ''} disabled className="h-11 rounded-lg bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed" />
             </div>
             <div className="space-y-2">
-              <Label>Register Number (Read-only)</Label>
-              <Input value={formData.registerNumber || ''} disabled className="bg-slate-50" />
+              <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center justify-between">Register Number <span className="text-[10px] text-slate-400 font-medium lowercase">Read-only</span></Label>
+              <Input value={formData.registerNumber || ''} disabled className="h-11 rounded-lg bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed" />
             </div>
             <div className="space-y-2">
-              <Label>Email</Label>
-              <Input type="email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} />
+              <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Email</Label>
+              <Input className="h-11 rounded-lg border-slate-200 focus-visible:ring-blue-500/20" type="email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label>Phone Number</Label>
-              <Input value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
+              <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Phone Number</Label>
+              <Input className="h-11 rounded-lg border-slate-200 focus-visible:ring-blue-500/20" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label>Department</Label>
-              <Input value={formData.department || ''} disabled className="bg-slate-50" />
+              <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center justify-between">Department <span className="text-[10px] text-slate-400 font-medium lowercase">Read-only</span></Label>
+              <Input value={formData.department || ''} disabled className="h-11 rounded-lg bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed" />
             </div>
             <div className="space-y-2">
-              <Label>Year</Label>
-              <Input value={formData.year || ''} disabled className="bg-slate-50" />
+              <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center justify-between">Year <span className="text-[10px] text-slate-400 font-medium lowercase">Read-only</span></Label>
+              <Input value={formData.year || ''} disabled className="h-11 rounded-lg bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed" />
             </div>
           </div>
-          <div className="pt-4 flex justify-end">
-            <Button className="bg-blue-600 hover:bg-blue-700 shadow-md" onClick={handleSave}>
+          <div className="pt-4 flex justify-end border-t border-slate-100">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-11 px-6 shadow-sm font-semibold transition-all mt-4" onClick={handleSave}>
               <Save className="w-4 h-4 mr-2" />
               Save Changes
             </Button>

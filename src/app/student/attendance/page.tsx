@@ -4,7 +4,7 @@ import { useDataStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Percent, Calendar } from 'lucide-react';
+import { Percent, Calendar, CheckCircle2, XCircle, AlertCircle, Clock } from 'lucide-react';
 
 export default function StudentAttendancePage() {
   const { user, attendances } = useDataStore();
@@ -17,93 +17,101 @@ export default function StudentAttendancePage() {
   const attendancePercentage = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 100;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Attendance History</h1>
-        <p className="text-slate-500 mt-1">View your transport attendance records.</p>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Attendance History</h1>
+        <p className="text-slate-500 mt-1 font-medium">View your transport attendance records.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600 flex items-center">
-              <Percent className="w-4 h-4 mr-2 text-blue-600" />
-              Overall Attendance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-3xl font-bold ${attendancePercentage < 75 ? 'text-red-600' : 'text-slate-800'}`}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl group hover:shadow-md transition-all">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start mb-6">
+              <div className="p-3 bg-blue-50 rounded-xl group-hover:scale-110 transition-transform">
+                <Percent className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+            <h3 className="text-slate-500 font-medium text-sm mb-1">Overall Attendance</h3>
+            <div className={`text-3xl font-bold tracking-tight ${attendancePercentage < 75 ? 'text-red-600' : 'text-slate-900'}`}>
               {attendancePercentage}%
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600 flex items-center">
-              <Calendar className="w-4 h-4 mr-2 text-emerald-600" />
-              Days Present
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-800">{presentDays}</div>
+        <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl group hover:shadow-md transition-all">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start mb-6">
+              <div className="p-3 bg-emerald-50 rounded-xl group-hover:scale-110 transition-transform">
+                <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+              </div>
+            </div>
+            <h3 className="text-slate-500 font-medium text-sm mb-1">Days Present</h3>
+            <div className="text-3xl font-bold text-slate-900 tracking-tight">{presentDays}</div>
           </CardContent>
         </Card>
         
-        <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600 flex items-center">
-              <Calendar className="w-4 h-4 mr-2 text-red-600" />
-              Days Absent
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-800">{absentDays}</div>
+        <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl group hover:shadow-md transition-all">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start mb-6">
+              <div className="p-3 bg-red-50 rounded-xl group-hover:scale-110 transition-transform">
+                <XCircle className="w-6 h-6 text-red-600" />
+              </div>
+            </div>
+            <h3 className="text-slate-500 font-medium text-sm mb-1">Days Absent</h3>
+            <div className="text-3xl font-bold text-slate-900 tracking-tight">{absentDays}</div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-none shadow-sm bg-white/50 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle>Detailed Records</CardTitle>
+      <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl overflow-hidden">
+        <CardHeader className="pb-4 px-6 pt-6 border-b border-slate-100 bg-slate-50/50">
+          <CardTitle className="text-base font-semibold text-slate-800">Detailed Records</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="rounded-md border border-slate-200 bg-white overflow-hidden">
-            <Table>
-              <TableHeader className="bg-slate-50">
-                <TableRow>
-                  <TableHead className="font-semibold text-slate-600">Date</TableHead>
-                  <TableHead className="font-semibold text-slate-600">Status</TableHead>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader className="bg-white">
+              <TableRow className="border-b border-slate-100 hover:bg-transparent">
+                <TableHead className="font-semibold text-slate-600 h-11 px-6">Date</TableHead>
+                <TableHead className="font-semibold text-slate-600 h-11 text-right px-6">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {studentAttendances.map((record) => (
+                <TableRow key={record.id} className="hover:bg-slate-50/80 transition-colors border-b border-slate-100">
+                  <TableCell className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="w-4 h-4 text-slate-400" />
+                      <span className="font-semibold text-slate-700 text-sm">
+                        {new Date(record.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right px-6">
+                    <Badge variant={record.status === 'present' ? 'default' : record.status === 'late' ? 'secondary' : record.status === 'leave' ? 'outline' : 'destructive'} 
+                      className={
+                        record.status === 'present' ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/60 shadow-none font-semibold px-2.5 py-0.5' : 
+                        record.status === 'late' ? 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200/60 shadow-none font-semibold px-2.5 py-0.5' : 
+                        record.status === 'leave' ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/60 shadow-none font-semibold px-2.5 py-0.5' : 
+                        'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200/60 shadow-none font-semibold px-2.5 py-0.5'
+                      }>
+                      {record.status.toUpperCase()}
+                    </Badge>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {studentAttendances.map((record) => (
-                  <TableRow key={record.id} className="hover:bg-slate-50/50 transition-colors">
-                    <TableCell className="font-medium text-slate-800">
-                      {new Date(record.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={record.status === 'present' ? 'default' : record.status === 'late' ? 'secondary' : record.status === 'leave' ? 'outline' : 'destructive'} 
-                        className={
-                          record.status === 'present' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 shadow-none' : 
-                          record.status === 'late' ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 shadow-none' : 
-                          record.status === 'leave' ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 shadow-none' : ''
-                        }>
-                        {record.status.toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {studentAttendances.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-center py-8 text-slate-500">
-                      No attendance records found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+              ))}
+              {studentAttendances.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-center py-12">
+                    <div className="flex flex-col items-center justify-center text-slate-500">
+                      <AlertCircle className="w-8 h-8 text-slate-300 mb-3" />
+                      <p className="font-medium text-slate-600">No attendance records found</p>
+                      <p className="text-sm">Attendance hasn't been marked for you yet.</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
