@@ -2,19 +2,23 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { mockRoutes } from '@/lib/mockData';
+import { useDataStore } from '@/lib/store';
 import { Stop, Route } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Save, Route as RouteIcon, Navigation, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { MapPin, Save, Route as RouteIcon, Navigation, AlertCircle, Bus as BusIcon, UserCircle, Users } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const RouteMap = dynamic(() => import('@/components/map/RouteMap'), { ssr: false });
 
 export default function RoutesPage() {
-  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
+  const { routes, buses, drivers, students } = useDataStore();
+  
+  // Default to first route if available, otherwise null
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(routes[0] || null);
   const [isCreating, setIsCreating] = useState(false);
   const [newStops, setNewStops] = useState<Stop[]>([]);
   const [routeName, setRouteName] = useState('');
@@ -46,13 +50,21 @@ export default function RoutesPage() {
     setIsCreating(false);
     alert('Route Saved successfully!');
   };
+  
+  const getRouteDetails = (route: Route) => {
+    const assignedBus = buses.find(b => b.routeId === route.id);
+    const assignedDriver = assignedBus ? drivers.find(d => d.assignedBusId === assignedBus.id) : null;
+    const assignedStudentsCount = students.filter(s => s.assignedRouteId === route.id).length;
+    
+    return { assignedBus, assignedDriver, assignedStudentsCount };
+  };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Route Management</h1>
-          <p className="text-slate-500 mt-1 font-medium">Manage and create bus routes with interactive mapping.</p>
+          <p className="text-slate-500 mt-1 font-medium">Manage and create interactive bus routes.</p>
         </div>
         <Button onClick={startCreating} className="bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow-md transition-all h-10 px-5 rounded-lg text-white font-medium">
           <RouteIcon className="w-4 h-4 mr-2" />
@@ -65,27 +77,36 @@ export default function RoutesPage() {
           {!isCreating ? (
             <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl overflow-hidden">
               <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
-                <CardTitle className="text-lg font-bold text-slate-800">Existing Routes</CardTitle>
-                <CardDescription className="text-sm">Select a route to view its details on the map.</CardDescription>
+                <CardTitle className="text-lg font-bold text-slate-800">Predefined Routes</CardTitle>
+                <CardDescription className="text-sm">Select a route to view its path on the map.</CardDescription>
               </CardHeader>
               <CardContent className="p-4 space-y-2">
-                {mockRoutes.map(route => (
-                  <Button 
-                    key={route.id} 
-                    variant={selectedRoute?.id === route.id ? 'default' : 'outline'}
-                    className={`w-full justify-start h-12 px-4 rounded-xl shadow-none font-semibold ${selectedRoute?.id === route.id ? 'bg-blue-600 text-white hover:bg-blue-700 border-transparent' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200'}`}
-                    onClick={() => { setSelectedRoute(route); setIsCreating(false); }}
-                  >
-                    <Navigation className={`w-4 h-4 mr-3 ${selectedRoute?.id === route.id ? 'text-blue-100' : 'text-slate-400'}`} />
-                    {route.name}
-                  </Button>
-                ))}
-                {mockRoutes.length === 0 && (
-                  <div className="text-center py-6 text-slate-500 flex flex-col items-center">
-                    <AlertCircle className="w-8 h-8 text-slate-300 mb-2" />
-                    <span className="text-sm">No routes found</span>
+                <ScrollArea className="h-[220px]">
+                  <div className="space-y-2 pr-4">
+                    {routes.map(route => (
+                      <Button 
+                        key={route.id} 
+                        variant={selectedRoute?.id === route.id ? 'default' : 'outline'}
+                        className={`w-full justify-start h-auto py-3 px-4 rounded-xl shadow-none font-semibold ${selectedRoute?.id === route.id ? 'bg-blue-600 text-white hover:bg-blue-700 border-transparent' : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200'}`}
+                        onClick={() => { setSelectedRoute(route); setIsCreating(false); }}
+                      >
+                        <Navigation className={`w-5 h-5 mr-3 shrink-0 ${selectedRoute?.id === route.id ? 'text-blue-100' : 'text-slate-400'}`} />
+                        <div className="flex flex-col items-start text-left">
+                          <span className="text-sm">{route.name}</span>
+                          <span className={`text-xs font-medium mt-0.5 ${selectedRoute?.id === route.id ? 'text-blue-200' : 'text-slate-400'}`}>
+                            {route.distance} • {route.estimatedTime}
+                          </span>
+                        </div>
+                      </Button>
+                    ))}
                   </div>
-                )}
+                  {routes.length === 0 && (
+                    <div className="text-center py-6 text-slate-500 flex flex-col items-center">
+                      <AlertCircle className="w-8 h-8 text-slate-300 mb-2" />
+                      <span className="text-sm">No routes found</span>
+                    </div>
+                  )}
+                </ScrollArea>
               </CardContent>
             </Card>
           ) : (
@@ -150,35 +171,82 @@ export default function RoutesPage() {
           )}
 
           {selectedRoute && !isCreating && (
-            <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl overflow-hidden">
+            <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl overflow-hidden flex flex-col h-full">
               <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
-                <CardTitle className="text-base font-bold text-slate-800">{selectedRoute.name} Details</CardTitle>
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-base font-bold text-slate-800">{selectedRoute.name}</CardTitle>
+                  <Badge variant="success">Active</Badge>
+                </div>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between text-sm items-center pb-3 border-b border-slate-100">
-                    <span className="text-slate-500 font-medium">Distance</span>
-                    <span className="font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">{selectedRoute.distance}</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center pb-3 border-b border-slate-100">
-                    <span className="text-slate-500 font-medium">Est. Time</span>
-                    <span className="font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">{selectedRoute.estimatedTime}</span>
-                  </div>
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-slate-500 font-medium">Total Stops</span>
-                    <span className="font-bold text-slate-900 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md">{selectedRoute.stops.length}</span>
+                <div className="space-y-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Distance</span>
+                      <div className="font-bold text-slate-900">{selectedRoute.distance}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Est. Time</span>
+                      <div className="font-bold text-slate-900">{selectedRoute.estimatedTime}</div>
+                    </div>
                   </div>
                   
-                  <div className="pt-4 space-y-3">
-                    <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Stops Sequence</Label>
-                    <div className="text-sm space-y-3 relative before:absolute before:inset-0 before:ml-[5px] before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200">
-                      {selectedRoute.stops.map((s, i) => (
-                        <div key={s.id} className="relative flex items-center text-slate-700 font-medium z-10">
-                          <div className={`w-3 h-3 rounded-full border-2 border-white shrink-0 mr-3 ${i === 0 ? 'bg-emerald-500' : i === selectedRoute.stops.length - 1 ? 'bg-red-500' : 'bg-blue-500'}`} />
-                          {s.name}
-                        </div>
-                      ))}
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-4">
+                    {(() => {
+                      const { assignedBus, assignedDriver, assignedStudentsCount } = getRouteDetails(selectedRoute);
+                      return (
+                        <>
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center text-slate-600 font-medium">
+                              <BusIcon className="w-4 h-4 mr-2 text-blue-500" />
+                              Assigned Bus
+                            </div>
+                            <span className="font-bold text-slate-900">{assignedBus ? assignedBus.busNumber : 'Unassigned'}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center text-slate-600 font-medium">
+                              <UserCircle className="w-4 h-4 mr-2 text-purple-500" />
+                              Driver
+                            </div>
+                            <span className="font-bold text-slate-900">{assignedDriver ? assignedDriver.name : 'Unassigned'}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center text-slate-600 font-medium">
+                              <Users className="w-4 h-4 mr-2 text-emerald-500" />
+                              Students
+                            </div>
+                            <span className="font-bold text-slate-900">{assignedStudentsCount} Enrolled</span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+
+                  <div className="pt-2 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Stops Sequence ({selectedRoute.stops.length})</Label>
                     </div>
+                    <ScrollArea className="h-[200px] pr-4">
+                      <div className="text-sm space-y-3 relative before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200">
+                        {selectedRoute.stops.map((s, i) => (
+                          <div key={s.id} className="relative flex flex-col text-slate-700 font-medium z-10 pl-8 pb-3">
+                            <div className={`absolute left-0 top-1 w-6 h-6 rounded-full border-[3px] border-white shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${i === 0 ? 'bg-emerald-500' : i === selectedRoute.stops.length - 1 ? 'bg-red-500' : 'bg-blue-500'}`}>
+                              {i + 1}
+                            </div>
+                            <span className={i === 0 || i === selectedRoute.stops.length - 1 ? 'font-bold text-slate-900' : ''}>
+                              {s.name}
+                            </span>
+                            {i === 0 && <span className="text-xs text-emerald-600 font-semibold mt-0.5">Origin</span>}
+                            {i === selectedRoute.stops.length - 1 && <span className="text-xs text-red-600 font-semibold mt-0.5">Destination</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                  
+                  <div className="flex gap-2 pt-2 border-t border-slate-100">
+                    <Button variant="outline" className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50">Edit Route</Button>
+                    <Button variant="outline" className="flex-1 text-red-600 border-red-200 hover:bg-red-50">Delete</Button>
                   </div>
                 </div>
               </CardContent>
@@ -186,17 +254,13 @@ export default function RoutesPage() {
           )}
         </div>
 
-        <div className="lg:col-span-2">
-          <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl overflow-hidden h-full flex flex-col min-h-[600px]">
-            <CardContent className="p-0 flex-1 relative h-full">
-              <RouteMap 
-                route={!isCreating && selectedRoute ? selectedRoute : undefined}
-                stops={isCreating ? newStops : []}
-                interactive={isCreating}
-                onStopAdded={handleMapClick}
-              />
-            </CardContent>
-          </Card>
+        <div className="lg:col-span-2 min-h-[600px] h-[calc(100vh-140px)]">
+          <RouteMap 
+            route={!isCreating && selectedRoute ? selectedRoute : undefined}
+            stops={isCreating ? newStops : []}
+            interactive={isCreating}
+            onStopAdded={handleMapClick}
+          />
         </div>
       </div>
     </div>

@@ -21,6 +21,7 @@ interface DataState {
   routes: Route[];
   attendances: Attendance[];
   markAttendance: (attendance: Attendance) => void;
+  markMultipleAttendances: (attendances: Attendance[]) => void;
   
   complaints: Complaint[];
   notifications: Notification[];
@@ -64,6 +65,18 @@ export const useDataStore = create<DataState>((set) => ({
       return { attendances: updated };
     }
     return { attendances: [...state.attendances, attendance] };
+  }),
+  markMultipleAttendances: (newAttendances) => set((state) => {
+    let updated = [...state.attendances];
+    for (const attendance of newAttendances) {
+      const existingIndex = updated.findIndex(a => a.studentId === attendance.studentId && a.date.split('T')[0] === attendance.date.split('T')[0]);
+      if (existingIndex >= 0) {
+        updated[existingIndex] = attendance;
+      } else {
+        updated.push(attendance);
+      }
+    }
+    return { attendances: updated };
   }),
   
   complaints: [...mockComplaints],

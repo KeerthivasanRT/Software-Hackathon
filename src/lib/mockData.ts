@@ -1,71 +1,152 @@
-import { Bus, Driver, Route, Student, Attendance, Complaint, Notification, User, Stop } from '@/types';
+import { Bus, Driver, Route, Student, Attendance, Complaint, Notification, User, Stop, AttendanceStatus } from '@/types';
 import { addDays, subDays } from 'date-fns';
 
 const today = new Date();
-
-export const mockUsers: User[] = [
-  { id: 'u1', name: 'Admin User', email: 'admin@college.edu', role: 'admin' },
-  { id: 'u2', name: 'John Driver', email: 'john@college.edu', role: 'driver' },
-  { id: 'u3', name: 'Alice Student', email: 'alice@college.edu', role: 'student' },
-];
+const todayStr = today.toISOString();
 
 export const mockBuses: Bus[] = [
-  { id: 'b1', busNumber: 'BUS-01', registrationNumber: 'KA-01-AB-1234', busName: 'Morning Express', capacity: 40, driverId: 'd1', routeId: 'r1', fuelType: 'Diesel', averageMileage: 4.5, status: 'active', notes: 'Regular maintenance done' },
-  { id: 'b2', busNumber: 'BUS-02', registrationNumber: 'KA-01-AB-5678', busName: 'Campus Shuttle', capacity: 50, driverId: 'd2', routeId: 'r2', fuelType: 'Diesel', averageMileage: 5.0, status: 'active' },
-  { id: 'b3', busNumber: 'BUS-03', registrationNumber: 'KA-01-AB-9012', busName: 'Evening Drops', capacity: 30, driverId: null, routeId: null, fuelType: 'Electric', averageMileage: 0, status: 'maintenance' },
+  { id: 'b1', busNumber: 'BUS-001', registrationNumber: 'TN-33-AB-1201', busName: 'BIT Bus A', capacity: 60, driverId: 'd1', routeId: 'r1', fuelType: 'Diesel', averageMileage: 4.5, status: 'active', notes: 'Regular maintenance done' },
+  { id: 'b2', busNumber: 'BUS-002', registrationNumber: 'TN-33-AB-1202', busName: 'BIT Bus B', capacity: 50, driverId: 'd2', routeId: 'r2', fuelType: 'Diesel', averageMileage: 5.0, status: 'active' },
+  { id: 'b3', busNumber: 'BUS-003', registrationNumber: 'TN-33-AB-1203', busName: 'BIT Bus C', capacity: 50, driverId: 'd3', routeId: 'r3', fuelType: 'Diesel', averageMileage: 4.8, status: 'active' },
+  { id: 'b4', busNumber: 'BUS-004', registrationNumber: 'TN-33-AB-1204', busName: 'BIT Bus D', capacity: 40, driverId: 'd4', routeId: 'r4', fuelType: 'Diesel', averageMileage: 5.2, status: 'active' },
 ];
 
 export const mockDrivers: Driver[] = [
-  { id: 'd1', name: 'John Driver', email: 'john@college.edu', role: 'driver', licenseNumber: 'DL-12345', phone: '555-0101', assignedBusId: 'b1' },
-  { id: 'd2', name: 'Mike Wheeler', email: 'mike@college.edu', role: 'driver', licenseNumber: 'DL-67890', phone: '555-0102', assignedBusId: 'b2' },
+  { id: 'd1', name: 'S. Kumar', email: 'kumar.s@bitsathy.ac.in', role: 'driver', licenseNumber: 'TN-DL-12345', phone: '9876543210', assignedBusId: 'b1' },
+  { id: 'd2', name: 'R. Murugan', email: 'murugan.r@bitsathy.ac.in', role: 'driver', licenseNumber: 'TN-DL-67890', phone: '9876543211', assignedBusId: 'b2' },
+  { id: 'd3', name: 'M. Karthikeyan', email: 'karthikeyan.m@bitsathy.ac.in', role: 'driver', licenseNumber: 'TN-DL-54321', phone: '9876543212', assignedBusId: 'b3' },
+  { id: 'd4', name: 'V. Prakash', email: 'prakash.v@bitsathy.ac.in', role: 'driver', licenseNumber: 'TN-DL-98765', phone: '9876543213', assignedBusId: 'b4' },
 ];
 
 export const mockRoutes: Route[] = [
   {
     id: 'r1',
-    name: 'Morning - North Campus',
-    distance: '25 km',
-    distanceKm: 25,
-    estimatedTime: '45 mins',
+    name: 'Route A',
+    distance: '35 km',
+    distanceKm: 35,
+    estimatedTime: '55 mins',
     stops: [
-      { id: 's1', name: 'City Center', latitude: 12.9716, longitude: 77.5946, order: 1 },
-      { id: 's2', name: 'North Mall', latitude: 12.9816, longitude: 77.6046, order: 2 },
-      { id: 's3', name: 'Bannari Amman Institute of Technology, Sathyamangalam, Erode, Tamil Nadu', latitude: 11.5034, longitude: 77.2714, order: 3 },
+      { id: 's1-1', name: 'Annur Bus Stand', latitude: 11.2333, longitude: 77.1000, order: 1 },
+      { id: 's1-2', name: 'Kunnathur', latitude: 11.2500, longitude: 77.1500, order: 2 },
+      { id: 's1-3', name: 'Kovilpalayam', latitude: 11.2800, longitude: 77.1800, order: 3 },
+      { id: 's1-4', name: 'Sathyamangalam', latitude: 11.5030, longitude: 77.2400, order: 4 },
+      { id: 's1-5', name: 'Bannari', latitude: 11.5032, longitude: 77.2500, order: 5 },
+      { id: 's1-6', name: 'BIT Campus', latitude: 11.5034, longitude: 77.2714, order: 6 },
     ],
   },
   {
     id: 'r2',
-    name: 'Evening - South Drop',
-    distance: '30 km',
-    distanceKm: 30,
+    name: 'Route B',
+    distance: '65 km',
+    distanceKm: 65,
+    estimatedTime: '90 mins',
+    stops: [
+      { id: 's2-1', name: 'Gandhipuram', latitude: 11.0183, longitude: 76.9660, order: 1 },
+      { id: 's2-2', name: 'Saibaba Colony', latitude: 11.0300, longitude: 76.9500, order: 2 },
+      { id: 's2-3', name: 'Saravanampatti', latitude: 11.0820, longitude: 76.9930, order: 3 },
+      { id: 's2-4', name: 'Kovilpalayam', latitude: 11.1640, longitude: 77.0420, order: 4 },
+      { id: 's2-5', name: 'Annur', latitude: 11.2333, longitude: 77.1000, order: 5 },
+      { id: 's2-6', name: 'Sathyamangalam', latitude: 11.5030, longitude: 77.2400, order: 6 },
+      { id: 's2-7', name: 'BIT Campus', latitude: 11.5034, longitude: 77.2714, order: 7 },
+    ],
+  },
+  {
+    id: 'r3',
+    name: 'Route C',
+    distance: '60 km',
+    distanceKm: 60,
+    estimatedTime: '80 mins',
+    stops: [
+      { id: 's3-1', name: 'Erode Bus Stand', latitude: 11.3410, longitude: 77.7170, order: 1 },
+      { id: 's3-2', name: 'Perundurai', latitude: 11.2700, longitude: 77.5800, order: 2 },
+      { id: 's3-3', name: 'Bhavani', latitude: 11.4500, longitude: 77.6800, order: 3 },
+      { id: 's3-4', name: 'Sathyamangalam', latitude: 11.5030, longitude: 77.2400, order: 4 },
+      { id: 's3-5', name: 'Bannari', latitude: 11.5032, longitude: 77.2500, order: 5 },
+      { id: 's3-6', name: 'BIT Campus', latitude: 11.5034, longitude: 77.2714, order: 6 },
+    ],
+  },
+  {
+    id: 'r4',
+    name: 'Route D',
+    distance: '45 km',
+    distanceKm: 45,
     estimatedTime: '60 mins',
     stops: [
-      { id: 's4', name: 'Bannari Amman Institute of Technology, Sathyamangalam, Erode, Tamil Nadu', latitude: 11.5034, longitude: 77.2714, order: 1 },
-      { id: 's5', name: 'Tech Park', latitude: 11.4500, longitude: 77.2000, order: 2 },
-      { id: 's6', name: 'Annur, Tamil Nadu', latitude: 11.2333, longitude: 77.1000, order: 3 },
+      { id: 's4-1', name: 'Bhavani Bus Stand', latitude: 11.4500, longitude: 77.6830, order: 1 },
+      { id: 's4-2', name: 'Kavindapadi', latitude: 11.4200, longitude: 77.5800, order: 2 },
+      { id: 's4-3', name: 'Athani', latitude: 11.5200, longitude: 77.5300, order: 3 },
+      { id: 's4-4', name: 'Sathyamangalam', latitude: 11.5030, longitude: 77.2400, order: 4 },
+      { id: 's4-5', name: 'Bannari', latitude: 11.5032, longitude: 77.2500, order: 5 },
+      { id: 's4-6', name: 'BIT Campus', latitude: 11.5034, longitude: 77.2714, order: 6 },
     ],
   }
 ];
 
-export const mockStudents: Student[] = [
-  { id: 'st1', name: 'Alice Student', email: 'alice@college.edu', role: 'student', studentId: 'CS2024-01', registerNumber: '730421104001', year: '3rd Year', department: 'Computer Science', phone: '555-0201', assignedBusId: 'b1', assignedRouteId: 'r1', pickupStopId: 's1' },
-  { id: 'st2', name: 'Bob Smith', email: 'bob@college.edu', role: 'student', studentId: 'ME2024-02', registerNumber: '730421114002', year: '2nd Year', department: 'Mechanical', phone: '555-0202', assignedBusId: 'b1', assignedRouteId: 'r1', pickupStopId: 's2' },
-  { id: 'st3', name: 'Charlie Brown', email: 'charlie@college.edu', role: 'student', studentId: 'EE2024-03', registerNumber: '730421105003', year: '4th Year', department: 'Electrical', phone: '555-0203', assignedBusId: 'b2', assignedRouteId: 'r2', pickupStopId: 's5' },
+const studentNames = [
+  'Arun Kumar', 'Rishvanth K', 'Praveen S', 'Hariharan M', 'Sanjay R', 'Karthikeyan V', 'Mohamed Irfan', 'Vignesh Kumar', 'Akash B', 'Harish Kumar', 
+  'Deepak R', 'Naveen Kumar', 'Rahul S', 'Dinesh K', 'Gokul Raj', 'Abishek M', 'Yogesh V', 'Nithish Kumar', 'Ashwin R', 'Surya Prakash', 
+  'Vikram S', 'Manoj K', 'Prasanth D', 'Santhosh M', 'Vijay R', 'Gowtham V', 'Ajith Kumar', 'Balaji S', 'Dhruv M', 'Kishore K', 
+  'Manikandan P', 'Nandha Kumar', 'Prakash Raj', 'Ramesh S', 'Saravanan M', 'Tharun V', 'Venkatesh R', 'Yuvraj M', 'Sathish Kumar', 'Rajesh K', 
+  'Nagaraj P', 'Kannan V', 'Jeeva S', 'Dhanush M', 'Bhuvanesh R', 'Aravind K', 'Vasanth S', 'Sriram M', 'Ponnusamy R', 'Murugesan K', 
+  'Lakshman V', 'Jagan S', 'Hari Krishna', 'Ganesan M', 'Elango R', 'Deva K', 'Chandra Sekar', 'Babu M', 'Anand S', 'Vinoth Kumar'
 ];
 
-export const mockAttendance: Attendance[] = [
-  { id: 'a1', studentId: 'st1', busId: 'b1', date: today.toISOString(), status: 'present' },
-  { id: 'a2', studentId: 'st2', busId: 'b1', date: today.toISOString(), status: 'absent' },
-  { id: 'a3', studentId: 'st3', busId: 'b2', date: today.toISOString(), status: 'present' },
-  { id: 'a4', studentId: 'st1', busId: 'b1', date: subDays(today, 1).toISOString(), status: 'present' },
+const departments = [
+  'Computer Science', 'Artificial Intelligence', 'Information Technology', 'Electronics and Communication', 
+  'Electrical and Electronics', 'Mechanical', 'Civil', 'Biotechnology'
+];
+
+const years = ['I Year', 'II Year', 'III Year', 'IV Year'];
+
+// Weighted distribution for realistic attendance statuses
+const statuses: AttendanceStatus[] = [
+  'present', 'present', 'present', 'present', 'present', 'present', 'present', 
+  'absent', 'late', 'leave'
+];
+
+export const mockStudents: Student[] = studentNames.map((name, index) => {
+  const route = mockRoutes[index % mockRoutes.length];
+  // Assign to stops excluding the final BIT Campus stop
+  const pickupStops = route.stops.slice(0, -1); 
+  const stop = pickupStops[index % pickupStops.length];
+  const busId = `b${(index % mockRoutes.length) + 1}`;
+  
+  return {
+    id: `st${index + 1}`,
+    name,
+    email: `${name.toLowerCase().replace(' ', '.')}@bitsathy.ac.in`,
+    role: 'student',
+    studentId: `${departments[index % departments.length].substring(0, 3).toUpperCase()}${(2024 - (index % 4)).toString()}-${(index + 1).toString().padStart(3, '0')}`,
+    registerNumber: `73042${(index % 4) + 1}104${(index + 1).toString().padStart(3, '0')}`,
+    department: departments[index % departments.length],
+    year: years[index % years.length],
+    phone: `98765${index.toString().padStart(5, '0')}`,
+    assignedBusId: busId,
+    assignedRouteId: route.id,
+    pickupStopId: stop.id,
+  };
+});
+
+export const mockAttendance: Attendance[] = mockStudents.map((student, index) => ({
+  id: `a${index + 1}`,
+  studentId: student.id,
+  busId: student.assignedBusId!,
+  date: todayStr,
+  status: statuses[index % statuses.length],
+}));
+
+export const mockUsers: User[] = [
+  { id: 'u1', name: 'Admin User', email: 'admin@college.edu', role: 'admin' },
+  { id: 'd1', name: 'S. Kumar', email: 'kumar.s@bitsathy.ac.in', role: 'driver' }, // maps to mockDrivers[0]
+  { id: 'st1', name: 'Arun Kumar', email: 'arun.kumar@bitsathy.ac.in', role: 'student' }, // maps to mockStudents[0]
 ];
 
 export const mockComplaints: Complaint[] = [
-  { id: 'c1', userId: 'st1', subject: 'Late Bus', description: 'Bus was 20 minutes late at City Center.', status: 'pending', date: subDays(today, 2).toISOString() },
-  { id: 'c2', userId: 'st2', subject: 'AC not working', description: 'The air conditioning in BUS-01 is broken.', status: 'in-progress', date: subDays(today, 1).toISOString() },
+  { id: 'c1', userId: 'st1', subject: 'Late Bus', description: 'Bus was 20 minutes late at Annur.', status: 'pending', date: subDays(today, 2).toISOString() },
+  { id: 'c2', userId: 'st2', subject: 'AC not working', description: 'The air conditioning in BUS-02 is broken.', status: 'in-progress', date: subDays(today, 1).toISOString() },
 ];
 
 export const mockNotifications: Notification[] = [
-  { id: 'n1', title: 'Route Change', message: 'North Campus Route will detour due to roadworks.', targetRole: 'all', date: today.toISOString(), isRead: false },
-  { id: 'n2', title: 'Maintenance', message: 'BUS-03 is under maintenance this week.', targetRole: 'driver', date: subDays(today, 1).toISOString(), isRead: true },
+  { id: 'n1', title: 'Route Change', message: 'Route A will detour due to roadworks near Kunnathur.', targetRole: 'all', date: today.toISOString(), isRead: false },
+  { id: 'n2', title: 'Maintenance', message: 'BUS-003 is scheduled for maintenance this weekend.', targetRole: 'driver', date: subDays(today, 1).toISOString(), isRead: true },
 ];

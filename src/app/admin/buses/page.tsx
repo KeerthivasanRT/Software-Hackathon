@@ -244,7 +244,7 @@ export default function BusesPage() {
                         bus.status === 'maintenance' ? 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200/60 shadow-none font-semibold px-2.5 py-0.5' : 
                         'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/60 shadow-none font-semibold px-2.5 py-0.5'
                       }>
-                      {bus.status}
+                      {bus.status === 'maintenance' ? 'Under Maintenance' : bus.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right px-6">

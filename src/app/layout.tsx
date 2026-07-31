@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Smart Transport Management Portal',
-  description: 'College transport management system',
+  title: 'BIT Transport Services',
+  description: 'Bannari Amman Institute of Technology transport management system',
 };
 
 export default function RootLayout({
