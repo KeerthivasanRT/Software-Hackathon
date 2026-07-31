@@ -12,10 +12,10 @@ export const mockBuses: Bus[] = [
 ];
 
 export const mockDrivers: Driver[] = [
-  { id: 'd1', name: 'S. Kumar', email: 'kumar.s@bitsathy.ac.in', role: 'driver', licenseNumber: 'TN-DL-12345', phone: '9876543210', assignedBusId: 'b1' },
-  { id: 'd2', name: 'R. Murugan', email: 'murugan.r@bitsathy.ac.in', role: 'driver', licenseNumber: 'TN-DL-67890', phone: '9876543211', assignedBusId: 'b2' },
-  { id: 'd3', name: 'M. Karthikeyan', email: 'karthikeyan.m@bitsathy.ac.in', role: 'driver', licenseNumber: 'TN-DL-54321', phone: '9876543212', assignedBusId: 'b3' },
-  { id: 'd4', name: 'V. Prakash', email: 'prakash.v@bitsathy.ac.in', role: 'driver', licenseNumber: 'TN-DL-98765', phone: '9876543213', assignedBusId: 'b4' },
+  { id: 'd1', name: 'S. Kumar', email: 'kumar.s@bitsathy.ac.in', role: 'driver', employeeId: 'DRV-001', licenseNumber: 'TN-DL-12345', licenseExpiry: '2028-05-12', experience: 5, phone: '9876543210', status: 'active', assignedBusId: 'b1', assignedRouteId: 'r1' },
+  { id: 'd2', name: 'R. Murugan', email: 'murugan.r@bitsathy.ac.in', role: 'driver', employeeId: 'DRV-002', licenseNumber: 'TN-DL-67890', licenseExpiry: '2027-11-20', experience: 8, phone: '9876543211', status: 'active', assignedBusId: 'b2', assignedRouteId: 'r2' },
+  { id: 'd3', name: 'M. Karthikeyan', email: 'karthikeyan.m@bitsathy.ac.in', role: 'driver', employeeId: 'DRV-003', licenseNumber: 'TN-DL-54321', licenseExpiry: '2029-01-15', experience: 3, phone: '9876543212', status: 'active', assignedBusId: 'b3', assignedRouteId: 'r3' },
+  { id: 'd4', name: 'V. Prakash', email: 'prakash.v@bitsathy.ac.in', role: 'driver', employeeId: 'DRV-004', licenseNumber: 'TN-DL-98765', licenseExpiry: '2026-08-30', experience: 12, phone: '9876543213', status: 'active', assignedBusId: 'b4', assignedRouteId: 'r4' },
 ];
 
 export const mockRoutes: Route[] = [

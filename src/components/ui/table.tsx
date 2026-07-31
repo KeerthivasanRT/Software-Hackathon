@@ -22,7 +22,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("sticky top-0 z-20 bg-slate-50/80 backdrop-blur-md rounded-xl shadow-[0_1px_0_rgba(226,232,240,1)]", className)}
+      className={cn("sticky top-0 z-20 bg-sky-50/80 backdrop-blur-md rounded-xl shadow-[0_1px_0_rgba(14,165,233,0.1)]", className)}
       {...props}
     />
   )
@@ -43,7 +43,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "border-t border-slate-200 bg-slate-50 font-semibold text-slate-900 rounded-b-xl",
+        "border-t border-[#D6ECFA] bg-sky-50 font-semibold text-slate-900 rounded-b-xl",
         className
       )}
       {...props}
@@ -56,7 +56,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "bg-white transition-all duration-200 hover:bg-slate-50 hover:shadow-sm hover:scale-[1.002] rounded-xl outline outline-1 outline-transparent hover:outline-slate-200/80 group",
+        "bg-white transition-all duration-200 hover:bg-sky-50/80 hover:shadow-sm hover:scale-[1.002] rounded-xl outline outline-1 outline-transparent hover:outline-sky-500/30 group",
         className
       )}
       {...props}
@@ -69,7 +69,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-12 px-4 text-left align-middle font-semibold text-slate-600 whitespace-nowrap first:rounded-l-xl last:rounded-r-xl tracking-wide",
+        "h-12 px-4 text-left align-middle font-bold text-sky-800 whitespace-nowrap first:rounded-l-xl last:rounded-r-xl tracking-wide",
         className
       )}
       {...props}
@@ -82,7 +82,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "p-4 align-middle whitespace-nowrap border-y border-slate-100 first:border-l first:rounded-l-xl last:border-r last:rounded-r-xl group-hover:border-slate-200/80 transition-colors",
+        "p-4 align-middle whitespace-nowrap border-y border-[#D6ECFA] first:border-l first:rounded-l-xl last:border-r last:rounded-r-xl group-hover:border-sky-500/30 transition-colors",
         className
       )}
       {...props}

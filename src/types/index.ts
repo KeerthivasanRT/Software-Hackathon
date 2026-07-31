@@ -25,9 +25,14 @@ export interface Bus {
 
 export interface Driver extends User {
   role: 'driver';
+  employeeId: string;
   licenseNumber: string;
+  licenseExpiry: string;
+  experience: number;
   phone: string;
+  status: 'active' | 'inactive';
   assignedBusId: string | null;
+  assignedRouteId: string | null;
 }
 
 export interface Student extends User {
@@ -83,4 +88,20 @@ export interface Notification {
   targetRole: Role | 'all';
   date: string; // ISO string
   isRead: boolean;
+}
+
+export interface Emergency {
+  id: string;
+  reportedBy?: 'driver' | 'student';
+  driverId?: string;
+  studentId?: string;
+  busId: string;
+  routeId: string;
+  pickupPoint: string;
+  emergencyType?: string;
+  description?: string;
+  date: string; // ISO string
+  status: 'active' | 'resolved';
+  remarks?: string;
+  actionTaken?: string;
 }

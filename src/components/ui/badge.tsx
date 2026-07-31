@@ -5,20 +5,22 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 capitalize",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 capitalize tracking-wide shadow-sm",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-slate-900 text-white shadow hover:bg-slate-800",
+          "border-transparent bg-sky-500/10 text-sky-600 hover:bg-sky-500/20 ring-1 ring-inset ring-sky-500/20 shadow-sm",
         secondary:
-          "border-transparent bg-slate-100 text-slate-900 hover:bg-slate-200",
+          "border-transparent bg-sky-50 text-sky-700 hover:bg-sky-100 ring-1 ring-inset ring-sky-200",
         destructive:
-          "border-transparent bg-red-50 text-red-700 hover:bg-red-100 shadow-none font-semibold",
-        outline: "text-slate-950 border-slate-200",
-        success: "border-transparent bg-emerald-50 text-emerald-700 hover:bg-emerald-100 shadow-none font-semibold",
-        warning: "border-transparent bg-orange-50 text-orange-700 hover:bg-orange-100 shadow-none font-semibold",
-        info: "border-transparent bg-blue-50 text-blue-700 hover:bg-blue-100 shadow-none font-semibold",
+          "border-transparent bg-red-50 text-red-600 hover:bg-red-100 ring-1 ring-inset ring-red-200",
+        outline: "text-slate-600 border-[#D6ECFA] hover:bg-sky-50",
+        success: "border-transparent bg-emerald-50 text-emerald-600 hover:bg-emerald-100 ring-1 ring-inset ring-emerald-200",
+        warning: "border-transparent bg-amber-50 text-amber-600 hover:bg-amber-100 ring-1 ring-inset ring-amber-200",
+        info: "border-transparent bg-cyan-50 text-cyan-600 hover:bg-cyan-100 ring-1 ring-inset ring-cyan-200",
+        purple: "border-transparent bg-purple-50 text-purple-600 hover:bg-purple-100 ring-1 ring-inset ring-purple-200",
+        orange: "border-transparent bg-orange-50 text-orange-600 hover:bg-orange-100 ring-1 ring-inset ring-orange-200",
       },
     },
     defaultVariants: {

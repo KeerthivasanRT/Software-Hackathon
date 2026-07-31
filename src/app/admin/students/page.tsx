@@ -82,21 +82,21 @@ export default function StudentsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Student Management</h1>
-          <p className="text-slate-500 mt-1 font-medium">Manage registered students and transport assignments.</p>
+          <p className="text-slate-600 mt-1 font-medium">Manage registered students and transport assignments.</p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all h-10 px-4" onClick={() => handleOpenDialog()}>
+            <Button className="bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all h-10 px-4" onClick={() => handleOpenDialog()}>
                 <Plus className="w-4 h-4 mr-2" />
                 Register Student
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[650px] bg-white rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+            <div className="px-6 py-4 border-b border-[#D6ECFA] bg-sky-50/50">
               <DialogTitle className="flex items-center text-xl font-bold text-slate-800">
                 <div className="p-2 bg-blue-100 rounded-lg mr-3">
-                  <GraduationCap className="w-5 h-5 text-blue-600" />
+                  <GraduationCap className="w-5 h-5 text-sky-600" />
                 </div>
                 {editingStudentId ? 'Edit Student Details' : 'Register New Student'}
               </DialogTitle>
@@ -106,35 +106,35 @@ export default function StudentsPage() {
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Student ID <span className="text-red-500">*</span></Label>
-                  <Input className="h-11 rounded-lg border-slate-200 focus-visible:ring-blue-500/20" value={formData.studentId || ''} onChange={e => setFormData({...formData, studentId: e.target.value})} placeholder="e.g. CS2024-01" />
+                  <Input className="h-11 rounded-lg border-[#D6ECFA] focus-visible:ring-sky-500/20" value={formData.studentId || ''} onChange={e => setFormData({...formData, studentId: e.target.value})} placeholder="e.g. CS2024-01" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Register Number</Label>
-                  <Input className="h-11 rounded-lg border-slate-200 focus-visible:ring-blue-500/20" value={formData.registerNumber || ''} onChange={e => setFormData({...formData, registerNumber: e.target.value})} placeholder="e.g. 730421104001" />
+                  <Input className="h-11 rounded-lg border-[#D6ECFA] focus-visible:ring-sky-500/20" value={formData.registerNumber || ''} onChange={e => setFormData({...formData, registerNumber: e.target.value})} placeholder="e.g. 730421104001" />
                 </div>
                 
                 <div className="space-y-2 col-span-2">
                   <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Full Name <span className="text-red-500">*</span></Label>
-                  <Input className="h-11 rounded-lg border-slate-200 focus-visible:ring-blue-500/20" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Student's name" />
+                  <Input className="h-11 rounded-lg border-[#D6ECFA] focus-visible:ring-sky-500/20" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Student's name" />
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Email</Label>
-                  <Input className="h-11 rounded-lg border-slate-200 focus-visible:ring-blue-500/20" type="email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="Email address" />
+                  <Input className="h-11 rounded-lg border-[#D6ECFA] focus-visible:ring-sky-500/20" type="email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="Email address" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Phone Number</Label>
-                  <Input className="h-11 rounded-lg border-slate-200 focus-visible:ring-blue-500/20" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="Phone number" />
+                  <Input className="h-11 rounded-lg border-[#D6ECFA] focus-visible:ring-sky-500/20" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="Phone number" />
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Department</Label>
-                  <Input className="h-11 rounded-lg border-slate-200 focus-visible:ring-blue-500/20" value={formData.department || ''} onChange={e => setFormData({...formData, department: e.target.value})} placeholder="e.g. Computer Science" />
+                  <Input className="h-11 rounded-lg border-[#D6ECFA] focus-visible:ring-sky-500/20" value={formData.department || ''} onChange={e => setFormData({...formData, department: e.target.value})} placeholder="e.g. Computer Science" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Year</Label>
                   <select 
-                    className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:border-blue-600 transition-all"
+                    className="flex h-11 w-full rounded-lg border border-[#D6ECFA] bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-500/20 focus-visible:border-sky-500 transition-all"
                     value={formData.year || '1st Year'} 
                     onChange={e => setFormData({...formData, year: e.target.value})}
                   >
@@ -148,7 +148,7 @@ export default function StudentsPage() {
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Assigned Route</Label>
                   <select 
-                    className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:border-blue-600 transition-all"
+                    className="flex h-11 w-full rounded-lg border border-[#D6ECFA] bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-500/20 focus-visible:border-sky-500 transition-all"
                     value={formData.assignedRouteId || ''} 
                     onChange={e => {
                       const newRouteId = e.target.value || null;
@@ -162,7 +162,7 @@ export default function StudentsPage() {
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Pickup Point</Label>
                   <select 
-                    className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:border-blue-600 transition-all disabled:opacity-50 disabled:bg-slate-50"
+                    className="flex h-11 w-full rounded-lg border border-[#D6ECFA] bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-500/20 focus-visible:border-sky-500 transition-all disabled:opacity-50 disabled:bg-sky-50"
                     value={formData.pickupStopId || ''} 
                     onChange={e => setFormData({...formData, pickupStopId: e.target.value || null})}
                     disabled={!formData.assignedRouteId}
@@ -175,7 +175,7 @@ export default function StudentsPage() {
                 <div className="space-y-2 col-span-2">
                   <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Assigned Bus</Label>
                   <select 
-                    className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 focus-visible:border-blue-600 transition-all"
+                    className="flex h-11 w-full rounded-lg border border-[#D6ECFA] bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-500/20 focus-visible:border-sky-500 transition-all"
                     value={formData.assignedBusId || ''} 
                     onChange={e => setFormData({...formData, assignedBusId: e.target.value || null})}
                   >
@@ -185,22 +185,22 @@ export default function StudentsPage() {
                 </div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end space-x-3">
+            <div className="px-6 py-4 border-t border-[#D6ECFA] bg-sky-50 flex justify-end space-x-3">
               <Button variant="outline" className="rounded-lg h-10 px-5" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-10 px-5 shadow-sm" onClick={handleSave}>Save Student</Button>
+              <Button className="bg-sky-600 hover:bg-sky-700 text-white rounded-lg h-10 px-5 shadow-sm" onClick={handleSave}>Save Student</Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl overflow-hidden">
-        <CardHeader className="pb-4 px-6 pt-6 border-b border-slate-100">
+      <Card className="border border-[#D6ECFA] border-t-4 border-t-purple-500 shadow-sm bg-white rounded-2xl overflow-hidden">
+        <CardHeader className="pb-4 px-6 pt-6 border-b border-[#D6ECFA]">
           <div className="flex items-center space-x-2">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-600 w-4 h-4" />
               <Input 
                 placeholder="Search students by name or ID..." 
-                className="pl-10 h-10 bg-slate-50/50 border-slate-200/60 rounded-xl text-sm focus-visible:ring-blue-500/20 focus-visible:bg-white transition-all"
+                className="pl-10 h-10 bg-sky-50/50 border-[#D6ECFA] rounded-xl text-sm focus-visible:ring-sky-500/20 focus-visible:bg-white transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -209,8 +209,8 @@ export default function StudentsPage() {
         </CardHeader>
         <CardContent className="p-0">
           <Table>
-            <TableHeader className="bg-slate-50/80">
-              <TableRow className="border-b border-slate-100 hover:bg-transparent">
+            <TableHeader className="bg-sky-50/80">
+              <TableRow className="border-b border-[#D6ECFA] hover:bg-transparent">
                 <TableHead className="font-semibold text-slate-600 h-11 px-6">Student Info</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-11">Academics</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-11">Contact</TableHead>
@@ -221,29 +221,29 @@ export default function StudentsPage() {
             </TableHeader>
             <TableBody>
               {filteredStudents.map((student) => (
-                <TableRow key={student.id} className="hover:bg-slate-50/80 transition-colors border-b border-slate-100">
+                <TableRow key={student.id} className="hover:bg-sky-50/80 transition-colors border-b border-[#D6ECFA]">
                   <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
-                        <UserCircle className="w-5 h-5 text-slate-500" />
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-[#D6ECFA]">
+                        <UserCircle className="w-5 h-5 text-slate-600" />
                       </div>
                       <div>
                         <div className="font-bold text-slate-900 text-sm tracking-tight">{student.name}</div>
-                        <div className="text-xs text-slate-500 mt-0.5">{student.studentId}</div>
-                        {student.registerNumber && <div className="text-xs font-medium text-slate-400 mt-0.5">{student.registerNumber}</div>}
+                        <div className="text-xs text-slate-600 mt-0.5">{student.studentId}</div>
+                        {student.registerNumber && <div className="text-xs font-medium text-slate-600 mt-0.5">{student.registerNumber}</div>}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="text-slate-600 text-sm">
                     <div className="font-medium text-slate-800">{student.department || 'N/A'}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{student.year || 'N/A'}</div>
+                    <div className="text-xs text-slate-600 mt-0.5">{student.year || 'N/A'}</div>
                   </TableCell>
                   <TableCell className="text-slate-600 text-sm">
                     <div className="font-medium text-slate-800">{student.phone || 'N/A'}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{student.email || 'N/A'}</div>
+                    <div className="text-xs text-slate-600 mt-0.5">{student.email || 'N/A'}</div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="bg-slate-50 border-slate-200 text-slate-600 font-medium shadow-none">
+                    <Badge variant="outline" className="bg-sky-50 border-[#D6ECFA] text-slate-600 font-medium shadow-none">
                       {getBusNumber(student.assignedBusId)}
                     </Badge>
                   </TableCell>
@@ -251,16 +251,16 @@ export default function StudentsPage() {
                     <div className="font-medium text-slate-800 max-w-[150px] truncate" title={getRouteName(student.assignedRouteId)}>
                       {getRouteName(student.assignedRouteId)}
                     </div>
-                    <div className="text-xs text-slate-500 mt-0.5 max-w-[150px] truncate" title={getPickupPointName(student.assignedRouteId, student.pickupStopId)}>
+                    <div className="text-xs text-slate-600 mt-0.5 max-w-[150px] truncate" title={getPickupPointName(student.assignedRouteId, student.pickupStopId)}>
                       {getPickupPointName(student.assignedRouteId, student.pickupStopId)}
                     </div>
                   </TableCell>
                   <TableCell className="text-right px-6">
                     <div className="flex justify-end space-x-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(student)} className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                      <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(student)} className="h-8 w-8 text-slate-600 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-colors">
                         <Edit2 className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(student.id)} className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(student.id)} className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -270,8 +270,8 @@ export default function StudentsPage() {
               {filteredStudents.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-12">
-                    <div className="flex flex-col items-center justify-center text-slate-500">
-                      <AlertCircle className="w-8 h-8 text-slate-300 mb-3" />
+                    <div className="flex flex-col items-center justify-center text-slate-600">
+                      <AlertCircle className="w-8 h-8 text-slate-700 mb-3" />
                       <p className="font-medium text-slate-600">No students found</p>
                       <p className="text-sm">Try adjusting your search query.</p>
                     </div>

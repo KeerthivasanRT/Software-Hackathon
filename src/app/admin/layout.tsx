@@ -7,12 +7,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-background text-foreground font-sans p-3 lg:p-4 gap-3 lg:gap-4 overflow-hidden selection:bg-blue-100 selection:text-blue-900">
-      <Sidebar role="admin" className="hidden lg:flex w-[260px] rounded-2xl bg-white border border-slate-200/50 shadow-premium shrink-0" />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden rounded-2xl bg-white border border-slate-200/50 shadow-premium relative">
+    <div className="flex h-screen bg-[#EEF8FF] text-slate-900 font-sans p-4 gap-4 overflow-hidden selection:bg-sky-500/30 selection:text-sky-900">
+      <Sidebar role="admin" className="hidden md:flex rounded-2xl bg-[#F8FCFF] border border-[#D6ECFA] shadow-lg shrink-0 z-10" />
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden rounded-2xl bg-white border border-[#D6ECFA] shadow-lg relative z-0">
         <Header role="admin" />
-        <main className="flex-1 overflow-auto bg-slate-50/30">
-          <div className="max-w-7xl mx-auto p-6 lg:p-10 w-full h-full">
+        <main className="flex-1 overflow-auto bg-[#EEF8FF]">
+          <div className="max-w-7xl mx-auto p-6 w-full h-full">
             {children}
           </div>
         </main>

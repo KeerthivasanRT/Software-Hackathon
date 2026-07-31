@@ -3,21 +3,25 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-xl border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-blue-500/20 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-xl border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-sky-500/20 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(15,23,42,1)] hover:bg-slate-800 hover:shadow-[0_4px_12px_rgba(15,23,42,0.15)]",
+        default: "bg-gradient-to-b from-[#38BDF8] to-[#0EA5E9] text-white shadow-[0_1px_2px_rgba(14,165,233,0.3),0_1px_0_rgba(255,255,255,0.2)_inset] hover:shadow-[0_4px_12px_rgba(14,165,233,0.25)] hover:from-sky-400 hover:to-sky-500 hover:-translate-y-[1px]",
         outline:
-          "border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300",
+          "border-sky-500/30 bg-white text-sky-600 shadow-sm hover:bg-sky-50 hover:text-sky-700 hover:border-sky-500/50 hover:-translate-y-[1px]",
         secondary:
-          "bg-slate-100 text-slate-900 shadow-sm hover:bg-slate-200 hover:shadow",
+          "bg-white text-sky-600 border border-sky-500/20 shadow-sm hover:bg-sky-50 hover:text-sky-700 hover:shadow-md hover:-translate-y-[1px]",
         ghost:
-          "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+          "text-slate-500 hover:bg-sky-50 hover:text-sky-700",
         destructive:
-          "bg-red-500 text-white shadow-sm hover:bg-red-600 hover:shadow-[0_4px_12px_rgba(239,68,68,0.2)]",
-        link: "text-blue-600 underline-offset-4 hover:underline",
-        gradient: "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.2)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.3)] hover:from-blue-500 hover:to-indigo-500",
+          "bg-gradient-to-b from-red-500 to-red-600 text-white shadow-[0_1px_2px_rgba(239,68,68,0.3),0_1px_0_rgba(255,255,255,0.2)_inset] hover:shadow-[0_4px_12px_rgba(239,68,68,0.25)] hover:from-red-400 hover:to-red-500 hover:-translate-y-[1px]",
+        success:
+          "bg-gradient-to-b from-green-500 to-green-600 text-white shadow-[0_1px_2px_rgba(34,197,94,0.3),0_1px_0_rgba(255,255,255,0.2)_inset] hover:shadow-[0_4px_12px_rgba(34,197,94,0.25)] hover:from-green-400 hover:to-green-500 hover:-translate-y-[1px]",
+        warning:
+          "bg-gradient-to-b from-amber-500 to-amber-600 text-white shadow-[0_1px_2px_rgba(245,158,11,0.3),0_1px_0_rgba(255,255,255,0.2)_inset] hover:shadow-[0_4px_12px_rgba(245,158,11,0.25)] hover:from-amber-400 hover:to-amber-500 hover:-translate-y-[1px]",
+        link: "text-sky-500 underline-offset-4 hover:underline",
+        gradient: "bg-gradient-to-r from-sky-400 to-sky-500 text-white shadow-[0_4px_12px_rgba(14,165,233,0.2)] hover:shadow-[0_6px_20px_rgba(14,165,233,0.3)] hover:from-sky-300 hover:to-sky-400 hover:-translate-y-[1px]",
       },
       size: {
         default:

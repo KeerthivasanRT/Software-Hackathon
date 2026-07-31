@@ -23,12 +23,12 @@ export default function StudentAttendancePage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
       <div>
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Attendance</h1>
-        <p className="text-slate-500 mt-1 font-medium">View your daily and historical transport attendance.</p>
+        <p className="text-slate-600 mt-1 font-medium">View your daily and historical transport attendance.</p>
       </div>
 
       {/* Today's Status Banner */}
       <Card className={`border shadow-sm rounded-2xl overflow-hidden transition-all ${
-        !todayAttendance ? 'bg-slate-50/50 border-slate-200/60' : 
+        !todayAttendance ? 'bg-sky-50/50 border-[#D6ECFA]' : 
         todayAttendance.status === 'present' ? 'bg-emerald-50/50 border-emerald-200' : 
         todayAttendance.status === 'late' ? 'bg-orange-50/50 border-orange-200' :
         'bg-red-50/50 border-red-200'
@@ -37,7 +37,7 @@ export default function StudentAttendancePage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className={`p-4 rounded-full ${
-                !todayAttendance ? 'bg-slate-200 text-slate-500' : 
+                !todayAttendance ? 'bg-sky-100 text-slate-600' : 
                 todayAttendance.status === 'present' ? 'bg-emerald-200 text-emerald-700' : 
                 todayAttendance.status === 'late' ? 'bg-orange-200 text-orange-700' :
                 'bg-red-200 text-red-700'
@@ -75,63 +75,63 @@ export default function StudentAttendancePage() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl group hover:shadow-md transition-all">
+        <Card className="border border-[#D6ECFA] shadow-sm bg-white rounded-2xl group hover:shadow-md transition-all">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-6">
-              <div className="p-3 bg-blue-50 rounded-xl group-hover:scale-110 transition-transform">
-                <Percent className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-sky-50 rounded-xl group-hover:scale-110 transition-transform">
+                <Percent className="w-6 h-6 text-sky-600" />
               </div>
             </div>
-            <h3 className="text-slate-500 font-medium text-sm mb-1">Overall Attendance</h3>
+            <h3 className="text-slate-600 font-medium text-sm mb-1">Overall Attendance</h3>
             <div className={`text-3xl font-bold tracking-tight ${attendancePercentage < 75 ? 'text-red-600' : 'text-slate-900'}`}>
               {attendancePercentage}%
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl group hover:shadow-md transition-all">
+        <Card className="border border-[#D6ECFA] shadow-sm bg-white rounded-2xl group hover:shadow-md transition-all">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-6">
               <div className="p-3 bg-emerald-50 rounded-xl group-hover:scale-110 transition-transform">
                 <CheckCircle2 className="w-6 h-6 text-emerald-600" />
               </div>
             </div>
-            <h3 className="text-slate-500 font-medium text-sm mb-1">Days Present</h3>
+            <h3 className="text-slate-600 font-medium text-sm mb-1">Days Present</h3>
             <div className="text-3xl font-bold text-slate-900 tracking-tight">{presentDays}</div>
           </CardContent>
         </Card>
         
-        <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl group hover:shadow-md transition-all">
+        <Card className="border border-[#D6ECFA] shadow-sm bg-white rounded-2xl group hover:shadow-md transition-all">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-6">
               <div className="p-3 bg-red-50 rounded-xl group-hover:scale-110 transition-transform">
                 <XCircle className="w-6 h-6 text-red-600" />
               </div>
             </div>
-            <h3 className="text-slate-500 font-medium text-sm mb-1">Days Absent</h3>
+            <h3 className="text-slate-600 font-medium text-sm mb-1">Days Absent</h3>
             <div className="text-3xl font-bold text-slate-900 tracking-tight">{absentDays}</div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border border-slate-200/60 shadow-sm bg-white rounded-2xl overflow-hidden">
-        <CardHeader className="pb-4 px-6 pt-6 border-b border-slate-100 bg-slate-50/50">
+      <Card className="border border-[#D6ECFA] shadow-sm bg-white rounded-2xl overflow-hidden">
+        <CardHeader className="pb-4 px-6 pt-6 border-b border-[#D6ECFA] bg-sky-50/50">
           <CardTitle className="text-base font-semibold text-slate-800">Historical Records</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader className="bg-white">
-              <TableRow className="border-b border-slate-100 hover:bg-transparent">
+              <TableRow className="border-b border-[#D6ECFA] hover:bg-transparent">
                 <TableHead className="font-semibold text-slate-600 h-11 px-6">Date</TableHead>
                 <TableHead className="font-semibold text-slate-600 h-11 text-right px-6">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {studentAttendances.map((record) => (
-                <TableRow key={record.id} className="hover:bg-slate-50/80 transition-colors border-b border-slate-100">
+                <TableRow key={record.id} className="hover:bg-sky-50/80 transition-colors border-b border-[#D6ECFA]">
                   <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <Calendar className="w-4 h-4 text-slate-400" />
+                      <Calendar className="w-4 h-4 text-slate-600" />
                       <span className="font-semibold text-slate-700 text-sm">
                         {new Date(record.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                       </span>
@@ -142,7 +142,7 @@ export default function StudentAttendancePage() {
                       className={
                         record.status === 'present' ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/60 shadow-none font-semibold px-2.5 py-0.5 capitalize' : 
                         record.status === 'late' ? 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200/60 shadow-none font-semibold px-2.5 py-0.5 capitalize' : 
-                        record.status === 'leave' ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/60 shadow-none font-semibold px-2.5 py-0.5 capitalize' : 
+                        record.status === 'leave' ? 'bg-white text-slate-700 hover:bg-sky-100 border border-[#D6ECFA] shadow-none font-semibold px-2.5 py-0.5 capitalize' : 
                         'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200/60 shadow-none font-semibold px-2.5 py-0.5 capitalize'
                       }>
                       {record.status}
@@ -153,8 +153,8 @@ export default function StudentAttendancePage() {
               {studentAttendances.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={2} className="text-center py-12">
-                    <div className="flex flex-col items-center justify-center text-slate-500">
-                      <AlertCircle className="w-8 h-8 text-slate-300 mb-3" />
+                    <div className="flex flex-col items-center justify-center text-slate-600">
+                      <AlertCircle className="w-8 h-8 text-slate-700 mb-3" />
                       <p className="font-medium text-slate-600">No attendance records found</p>
                       <p className="text-sm">Attendance hasn't been marked for you yet.</p>
                     </div>
