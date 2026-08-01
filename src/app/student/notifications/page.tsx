@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell, CheckCircle2, Trash2, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function DriverNotificationsPage() {
-  const { notifications, user, markNotificationRead, markAllNotificationsRead, deleteNotificationForUser, drivers } = useDataStore();
+export default function StudentNotificationsPage() {
+  const { notifications, user, markNotificationRead, markAllNotificationsRead, deleteNotificationForUser, students } = useDataStore();
   
-  const driverProfile = drivers.find(d => d.id === user?.id);
+  const studentProfile = students.find(s => s.id === user?.id);
   
   const filteredNotifications = notifications.filter(n => {
     if (n.status && n.status !== 'sent') return false;
@@ -16,13 +16,13 @@ export default function DriverNotificationsPage() {
     
     // Filtering logic
     if (n.recipientType === 'all') return true;
-    if (n.recipientType === 'all_drivers') return true;
-    if (n.recipientType === 'specific_driver' && n.recipientIds?.includes(user?.id || '')) return true;
-    if (n.recipientType === 'route_drivers' && n.recipientIds?.includes(driverProfile?.assignedRouteId || '')) return true;
-    if (n.recipientType === 'bus_drivers' && n.recipientIds?.includes(driverProfile?.assignedBusId || '')) return true;
+    if (n.recipientType === 'all_students') return true;
+    if (n.recipientType === 'specific_student' && n.recipientIds?.includes(user?.id || '')) return true;
+    if (n.recipientType === 'route_students' && n.recipientIds?.includes(studentProfile?.assignedRouteId || '')) return true;
+    if (n.recipientType === 'bus_students' && n.recipientIds?.includes(studentProfile?.assignedBusId || '')) return true;
     
     // Backwards compat
-    if (!n.recipientType && (n.targetRole === 'driver' || n.targetRole === 'all')) return true;
+    if (!n.recipientType && (n.targetRole === 'student' || n.targetRole === 'all')) return true;
     
     return false;
   }).sort((a, b) => {
@@ -32,7 +32,7 @@ export default function DriverNotificationsPage() {
   });
 
   const handleMarkAllRead = () => {
-    if (user?.id) markAllNotificationsRead(user.id, 'driver');
+    if (user?.id) markAllNotificationsRead(user.id, 'student');
   };
 
   const getPriorityColor = (p: string) => {

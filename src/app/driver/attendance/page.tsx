@@ -19,7 +19,7 @@ export default function DriverAttendancePage() {
   const [localAttendance, setLocalAttendance] = useState<Record<string, AttendanceStatus>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const assignedBus = buses.find(b => b.driverId === user?.id) || buses[0];
+  const assignedBus = buses.find(b => b.driverId === user?.id);
   const assignedRoute = useMemo(() => routes.find(r => r.id === assignedBus?.routeId), [routes, assignedBus]);
   const assignedStudents = useMemo(() => students.filter(s => s.assignedBusId === assignedBus?.id), [students, assignedBus]);
   

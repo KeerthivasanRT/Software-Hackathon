@@ -9,19 +9,27 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Save, Route as RouteIcon, Navigation, AlertCircle, Bus as BusIcon, UserCircle, Users } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { MapPin, Save, Route as RouteIcon, Navigation, AlertCircle, Bus as BusIcon, UserCircle, Users, Trash2, Edit2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const RouteMap = dynamic(() => import('@/components/map/RouteMap'), { ssr: false });
 
 export default function RoutesPage() {
-  const { routes, buses, drivers, students } = useDataStore();
+  const { routes, buses, drivers, students, addRoute, updateRoute, deleteRoute, updateDriver, updateBus } = useDataStore();
   
   // Default to first route if available, otherwise null
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(routes[0] || null);
   const [isCreating, setIsCreating] = useState(false);
   const [newStops, setNewStops] = useState<Stop[]>([]);
   const [routeName, setRouteName] = useState('');
+  
+  // Edit & Delete Modals
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [editingRoute, setEditingRoute] = useState<Route | null>(null);
+  const [editAssignedDriverId, setEditAssignedDriverId] = useState<string>('');
+  const [editAssignedBusId, setEditAssignedBusId] = useState<string>('');
 
   const handleMapClick = (lat: number, lng: number) => {
     if (!isCreating) return;
@@ -47,8 +55,55 @@ export default function RoutesPage() {
   };
 
   const saveRoute = () => {
+    if (!routeName || newStops.length < 2) return;
+    const newRoute: Route = {
+      id: `r${Date.now()}`,
+      name: routeName,
+      stops: newStops,
+      distance: `${(newStops.length * 5).toFixed(1)} km`,
+      distanceKm: newStops.length * 5,
+      estimatedTime: `${newStops.length * 15} mins`,
+    };
+    addRoute(newRoute);
     setIsCreating(false);
-    alert('Route Saved successfully!');
+    setSelectedRoute(newRoute);
+  };
+  
+  const openEditDialog = (route: Route) => {
+    setEditingRoute(JSON.parse(JSON.stringify(route)));
+    const assignedDriver = drivers.find(d => d.assignedRouteId === route.id && d.status === 'active');
+    const assignedBus = assignedDriver ? buses.find(b => b.id === assignedDriver.assignedBusId) : buses.find(b => b.routeId === route.id);
+    setEditAssignedDriverId(assignedDriver?.id || '');
+    setEditAssignedBusId(assignedBus?.id || '');
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingRoute) {
+      updateRoute(editingRoute);
+      
+      // Update driver and bus assignment
+      if (editAssignedDriverId) {
+        const driver = drivers.find(d => d.id === editAssignedDriverId);
+        if (driver) updateDriver({ ...driver, assignedRouteId: editingRoute.id, assignedBusId: editAssignedBusId || driver.assignedBusId });
+      }
+      
+      if (editAssignedBusId) {
+        const bus = buses.find(b => b.id === editAssignedBusId);
+        if (bus) updateBus({ ...bus, routeId: editingRoute.id, driverId: editAssignedDriverId || bus.driverId });
+      }
+      
+      setIsEditDialogOpen(false);
+      setSelectedRoute(editingRoute);
+    }
+  };
+
+  const handleDelete = () => {
+    if (selectedRoute) {
+      deleteRoute(selectedRoute.id);
+      setIsDeleteDialogOpen(false);
+      setSelectedRoute(routes[0] || null);
+    }
   };
   
   const getRouteDetails = (route: Route) => {
@@ -245,8 +300,12 @@ export default function RoutesPage() {
                   </div>
                   
                   <div className="flex gap-2 pt-2 border-t border-[#D6ECFA]">
-                    <Button variant="outline" className="flex-1 text-sky-600 border-sky-200 hover:bg-sky-50">Edit Route</Button>
-                    <Button variant="outline" className="flex-1 text-red-600 border-red-200 hover:bg-red-50">Delete</Button>
+                    <Button variant="outline" onClick={() => openEditDialog(selectedRoute)} className="flex-1 text-sky-600 border-sky-200 hover:bg-sky-50">
+                      <Edit2 className="w-4 h-4 mr-2" /> Edit Route
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsDeleteDialogOpen(true)} className="flex-1 text-red-600 border-red-200 hover:bg-red-50">
+                      <Trash2 className="w-4 h-4 mr-2" /> Delete
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -263,6 +322,176 @@ export default function RoutesPage() {
           />
         </div>
       </div>
+
+      {/* Edit Route Modal */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-2xl border-[#D6ECFA] shadow-xl p-0 overflow-hidden">
+          <div className="bg-sky-600 h-2" />
+          <div className="p-6">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-xl font-bold text-slate-900 flex items-center">
+                <Edit2 className="w-5 h-5 mr-2 text-sky-600" />
+                Edit Route Details
+              </DialogTitle>
+              <DialogDescription className="text-slate-600 font-medium">
+                Modify the route parameters and assignments below. Changes will sync immediately.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {editingRoute && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Route Name</Label>
+                    <Input 
+                      value={editingRoute.name} 
+                      onChange={e => setEditingRoute({...editingRoute, name: e.target.value})} 
+                      className="h-10 bg-sky-50/50 border-[#D6ECFA]"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Est. Distance</Label>
+                      <Input 
+                        value={editingRoute.distance} 
+                        onChange={e => setEditingRoute({...editingRoute, distance: e.target.value})} 
+                        className="h-10 bg-sky-50/50 border-[#D6ECFA]"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Est. Time</Label>
+                      <Input 
+                        value={editingRoute.estimatedTime} 
+                        onChange={e => setEditingRoute({...editingRoute, estimatedTime: e.target.value})} 
+                        className="h-10 bg-sky-50/50 border-[#D6ECFA]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Origin</Label>
+                    <Input 
+                      value={editingRoute.stops[0]?.name || ''} 
+                      onChange={e => {
+                        const newStops = [...editingRoute.stops];
+                        if (newStops[0]) newStops[0].name = e.target.value;
+                        setEditingRoute({...editingRoute, stops: newStops});
+                      }} 
+                      className="h-10 bg-sky-50/50 border-[#D6ECFA]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Destination</Label>
+                    <Input 
+                      value={editingRoute.stops[editingRoute.stops.length - 1]?.name || ''} 
+                      onChange={e => {
+                        const newStops = [...editingRoute.stops];
+                        if (newStops.length > 0) newStops[newStops.length - 1].name = e.target.value;
+                        setEditingRoute({...editingRoute, stops: newStops});
+                      }} 
+                      className="h-10 bg-sky-50/50 border-[#D6ECFA]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="p-4 bg-sky-50 border border-[#D6ECFA] rounded-xl">
+                    <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">Assignments</h4>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-700 flex items-center">
+                          <BusIcon className="w-3 h-3 mr-1" /> Assigned Bus
+                        </Label>
+                        <select 
+                          value={editAssignedBusId} 
+                          onChange={e => setEditAssignedBusId(e.target.value)} 
+                          className="w-full h-10 rounded-md border border-[#D6ECFA] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                        >
+                          <option value="">No Bus Assigned</option>
+                          {buses.map(bus => (
+                            <option key={bus.id} value={bus.id}>{bus.busNumber} ({bus.registrationNumber})</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-700 flex items-center">
+                          <UserCircle className="w-3 h-3 mr-1" /> Assigned Driver
+                        </Label>
+                        <select 
+                          value={editAssignedDriverId} 
+                          onChange={e => setEditAssignedDriverId(e.target.value)} 
+                          className="w-full h-10 rounded-md border border-[#D6ECFA] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                        >
+                          <option value="">No Driver Assigned</option>
+                          {drivers.map(driver => (
+                            <option key={driver.id} value={driver.id}>{driver.name} ({driver.employeeId})</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Intermediate Stops</Label>
+                    <ScrollArea className="h-32 border border-[#D6ECFA] rounded-xl bg-white p-2">
+                      <div className="space-y-2">
+                        {editingRoute.stops.slice(1, -1).map((stop, i) => (
+                          <div key={stop.id} className="flex items-center space-x-2">
+                            <span className="text-xs font-bold text-slate-400 w-4">{i + 2}.</span>
+                            <Input 
+                              value={stop.name} 
+                              onChange={(e) => {
+                                const newStops = [...editingRoute.stops];
+                                newStops[i + 1].name = e.target.value;
+                                setEditingRoute({...editingRoute, stops: newStops});
+                              }}
+                              className="h-8 text-sm"
+                            />
+                          </div>
+                        ))}
+                        {editingRoute.stops.length <= 2 && (
+                          <div className="text-xs text-slate-500 text-center py-2">No intermediate stops.</div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <DialogFooter className="mt-8 pt-6 border-t border-[#D6ECFA]">
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="font-semibold">Cancel</Button>
+              <Button onClick={handleSaveEdit} className="bg-sky-600 hover:bg-sky-700 font-bold px-6 shadow-md shadow-blue-500/20">
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md border-red-100 shadow-xl shadow-red-500/10 p-0 overflow-hidden">
+          <div className="bg-red-600 h-2" />
+          <div className="p-6">
+            <DialogHeader>
+              <DialogTitle className="flex items-center text-red-600 font-bold text-xl">
+                Delete Route
+              </DialogTitle>
+              <DialogDescription className="text-slate-600 font-medium text-base pt-2">
+                Are you sure you want to delete this route? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-6">
+              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="font-semibold">Cancel</Button>
+              <Button variant="destructive" onClick={handleDelete} className="font-bold bg-red-600 hover:bg-red-700 shadow-md shadow-red-500/20">
+                Delete
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

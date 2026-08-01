@@ -10,7 +10,7 @@ const RouteMap = dynamic(() => import('@/components/map/RouteMap'), { ssr: false
 export default function DriverRoutePage() {
   const { user, buses, routes } = useDataStore();
   
-  const assignedBus = buses.find(b => b.driverId === user?.id) || buses[0];
+  const assignedBus = buses.find(b => b.driverId === user?.id);
   const route = routes.find(r => r.id === assignedBus?.routeId);
 
   return (

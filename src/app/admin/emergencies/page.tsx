@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Search, Filter, X, ShieldAlert, Calendar, PhoneCall, Bus, Navigation, Clock, UserCircle, Activity, ArrowRight, ShieldCheck, MapPin } from 'lucide-react';
+import { Search, Filter, X, ShieldAlert, Calendar, PhoneCall, Bus, Navigation, Clock, UserCircle, Activity, ArrowRight, ShieldCheck, MapPin, AlertTriangle } from 'lucide-react';
 import { Emergency } from '@/types';
 
 export default function AdminEmergencyHistoryPage() {

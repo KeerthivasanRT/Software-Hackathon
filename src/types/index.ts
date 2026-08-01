@@ -77,7 +77,15 @@ export interface Complaint {
   userId: string;
   subject: string;
   description: string;
-  status: 'pending' | 'in-progress' | 'resolved';
+  status: 'pending' | 'in-progress' | 'resolved' | 'closed';
+  date: string; // ISO string
+  priority?: 'low' | 'medium' | 'high';
+  resolutionRemarks?: string;
+}
+
+export interface Activity {
+  id: string;
+  message: string;
   date: string; // ISO string
 }
 
@@ -85,9 +93,17 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  targetRole: Role | 'all';
+  category?: string; 
+  priority?: 'low' | 'medium' | 'high' | 'emergency';
+  targetRole: Role | 'all' | 'specific';
+  recipientType?: 'all' | 'all_students' | 'all_drivers' | 'specific_student' | 'specific_driver' | 'route_students' | 'route_drivers' | 'bus_students' | 'bus_drivers';
+  recipientIds?: string[];
+  status?: 'draft' | 'scheduled' | 'sent';
+  sendTime?: string;
   date: string; // ISO string
-  isRead: boolean;
+  isRead?: boolean; // legacy
+  readBy?: string[];
+  deletedBy?: string[];
 }
 
 export interface Emergency {

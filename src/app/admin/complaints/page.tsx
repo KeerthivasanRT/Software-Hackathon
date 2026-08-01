@@ -7,20 +7,34 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, CheckCircle, Clock, AlertCircle, MessageSquareWarning } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Search, CheckCircle, Clock, AlertCircle, MessageSquareWarning, Eye, Save } from 'lucide-react';
 import { Complaint } from '@/types';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function AdminComplaintsPage() {
-  const { complaints, students } = useDataStore();
+  const { complaints, students, updateComplaint } = useDataStore();
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingComplaint, setEditingComplaint] = useState<Complaint | null>(null);
 
   const filteredComplaints = complaints.filter(c => 
     c.subject.toLowerCase().includes(searchTerm.toLowerCase()) || 
     c.description.toLowerCase().includes(searchTerm.toLowerCase())
   ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const handleStatusChange = (id: string, status: Complaint['status']) => {
-    alert(`Complaint ${id} marked as ${status}.`);
+  const handleOpenEditDialog = (complaint: Complaint) => {
+    setEditingComplaint({ ...complaint });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingComplaint) {
+      updateComplaint(editingComplaint);
+      setIsEditDialogOpen(false);
+    }
   };
 
   return (
@@ -87,6 +101,7 @@ export default function AdminComplaintsPage() {
                         className={
                           complaint.status === 'resolved' ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/60 shadow-none font-semibold px-2.5 py-0.5' : 
                           complaint.status === 'in-progress' ? 'bg-sky-50 text-sky-600 hover:bg-blue-100 border border-sky-200/60 shadow-none font-semibold px-2.5 py-0.5' : 
+                          complaint.status === 'closed' ? 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60 shadow-none font-semibold px-2.5 py-0.5' :
                           'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200/60 shadow-none font-semibold px-2.5 py-0.5'
                         }>
                         {complaint.status.replace('-', ' ').toUpperCase()}
@@ -94,13 +109,9 @@ export default function AdminComplaintsPage() {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => handleStatusChange(complaint.id, 'in-progress')} className="h-8 text-sky-600 border-sky-200/60 hover:bg-sky-50 rounded-lg shadow-sm transition-all text-xs font-semibold">
-                          <Clock className="w-3.5 h-3.5 mr-1.5" />
-                          Investigate
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleStatusChange(complaint.id, 'resolved')} className="h-8 text-emerald-600 border-emerald-200/60 hover:bg-emerald-50 rounded-lg shadow-sm transition-all text-xs font-semibold">
-                          <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-                          Resolve
+                        <Button variant="outline" size="sm" onClick={() => handleOpenEditDialog(complaint)} className="h-8 text-sky-600 border-sky-200/60 hover:bg-sky-50 rounded-lg shadow-sm transition-all text-xs font-semibold">
+                          <Eye className="w-3.5 h-3.5 mr-1.5" />
+                          View & Edit
                         </Button>
                       </div>
                     </TableCell>
@@ -122,6 +133,89 @@ export default function AdminComplaintsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Edit Complaint Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-2xl border-[#D6ECFA] shadow-xl p-0 overflow-hidden">
+          <div className="bg-orange-500 h-2" />
+          <div className="p-6">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-xl font-bold text-slate-900 flex items-center">
+                <MessageSquareWarning className="w-5 h-5 mr-2 text-orange-500" />
+                Complaint Details
+              </DialogTitle>
+              <DialogDescription className="text-slate-600 font-medium">
+                Review and update the status of this complaint.
+              </DialogDescription>
+            </DialogHeader>
+
+            {editingComplaint && (
+              <div className="space-y-6">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                  <div>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Student</span>
+                    <p className="font-bold text-slate-900">{students.find(s => s.id === editingComplaint.userId)?.name}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Subject</span>
+                    <p className="font-bold text-slate-900">{editingComplaint.subject}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Description</span>
+                    <p className="text-sm text-slate-700 mt-1">{editingComplaint.description}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Status</Label>
+                    <select 
+                      value={editingComplaint.status} 
+                      onChange={e => setEditingComplaint({...editingComplaint, status: e.target.value as Complaint['status']})} 
+                      className="w-full h-10 rounded-md border border-[#D6ECFA] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="in-progress">In Progress</option>
+                      <option value="resolved">Resolved</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Priority</Label>
+                    <select 
+                      value={editingComplaint.priority || 'low'} 
+                      onChange={e => setEditingComplaint({...editingComplaint, priority: e.target.value as Complaint['priority']})} 
+                      className="w-full h-10 rounded-md border border-[#D6ECFA] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Resolution Remarks</Label>
+                  <Textarea 
+                    placeholder="Add notes about how this was resolved..."
+                    value={editingComplaint.resolutionRemarks || ''}
+                    onChange={e => setEditingComplaint({...editingComplaint, resolutionRemarks: e.target.value})}
+                    className="min-h-[100px] border-[#D6ECFA] focus-visible:ring-sky-500/20"
+                  />
+                </div>
+              </div>
+            )}
+
+            <DialogFooter className="mt-8 pt-6 border-t border-[#D6ECFA]">
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="font-semibold">Cancel</Button>
+              <Button onClick={handleSaveEdit} className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 shadow-md shadow-orange-500/20">
+                <Save className="w-4 h-4 mr-2" />
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

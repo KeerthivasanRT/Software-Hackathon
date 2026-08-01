@@ -11,6 +11,8 @@ import { MapPin, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 export default function LoginPage() {
   const router = useRouter();
   const login = useDataStore((state) => state.login);
+  const drivers = useDataStore((state) => state.drivers);
+  const students = useDataStore((state) => state.students);
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -31,14 +33,39 @@ export default function LoginPage() {
     }
     
     let role: 'admin' | 'driver' | 'student' | null = null;
+    let foundUserId: string | null = null;
     const lowerEmail = email.toLowerCase();
+    const lowerName = name.toLowerCase();
     
-    if (lowerEmail.includes('@admin')) role = 'admin';
-    else if (lowerEmail.includes('@student')) role = 'student';
-    else if (lowerEmail.includes('@driver')) role = 'driver';
+    // Find driver by name or email (partial match)
+    const matchedDriver = drivers.find(d => 
+      d.email.toLowerCase() === lowerEmail || 
+      lowerEmail.includes(d.name.toLowerCase().split(' ').pop() || d.name.toLowerCase()) || 
+      d.name.toLowerCase().includes(lowerName)
+    );
+    if (matchedDriver) {
+      role = 'driver';
+      foundUserId = matchedDriver.id;
+    }
+    
+    // Find student by name or email (partial match)
+    if (!role) {
+      const matchedStudent = students.find(s => 
+        s.email.toLowerCase() === lowerEmail || 
+        s.name.toLowerCase().includes(lowerName)
+      );
+      if (matchedStudent) {
+        role = 'student';
+        foundUserId = matchedStudent.id;
+      }
+    }
+    
+    if (!role && (lowerEmail.includes('@admin') || lowerEmail === 'admin@college.edu')) {
+      role = 'admin';
+    }
     
     if (!role) {
-      setError('Invalid institutional email. Please use an Admin, Student or Driver account.');
+      setError('Invalid credentials. Please use an Admin, Student or Driver account.');
       return;
     }
     
@@ -47,7 +74,7 @@ export default function LoginPage() {
     // Simulate authentication delay
     await new Promise(resolve => setTimeout(resolve, 1200));
     
-    login(role);
+    login(role, foundUserId, lowerEmail);
     router.push(`/${role}/dashboard`);
   };
 

@@ -1,17 +1,18 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bus, Users, UserCircle, MessageSquareWarning, Droplet, ArrowUpRight, ArrowDownRight, Sparkles, Activity, AlertTriangle, PhoneCall, CheckCircle } from 'lucide-react';
+import { Bus, Users, UserCircle, MessageSquareWarning, Droplet, ArrowUpRight, ArrowDownRight, Sparkles, Activity, AlertTriangle, PhoneCall, CheckCircle, Bell } from 'lucide-react';
 import { useDataStore } from '@/lib/store';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 export default function AdminDashboard() {
-  const { buses, students, drivers, complaints, routes, emergencies, resolveEmergency } = useDataStore();
+  const { buses, students, drivers, complaints, routes, emergencies, resolveEmergency, activities, notifications } = useDataStore();
 
   const activeEmergencies = emergencies.filter(e => e.status === 'active');
 
   const activeBuses = buses.filter(b => b.status === 'active').length;
   const pendingComplaints = complaints.filter(c => c.status === 'pending').length;
+  const resolvedComplaints = complaints.filter(c => c.status === 'resolved').length;
 
   let totalFuelRequired = 0;
   const fuelPrice = 95;
@@ -30,11 +31,12 @@ export default function AdminDashboard() {
   const totalFuelCost = totalFuelRequired * fuelPrice;
 
   const statCards = [
-    { title: 'Total Fleet', value: buses.length, icon: Bus, color: 'text-sky-600', bg: 'bg-sky-50', shadow: 'shadow-sky-500/10', border: 'border-sky-100', trend: '+2', trendPositive: true, subtitle: `${activeBuses} active currently` },
-    { title: 'Total Students', value: students.length, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50', shadow: 'shadow-indigo-500/10', border: 'border-indigo-100', trend: '+12%', trendPositive: true, subtitle: 'Registered in system' },
-    { title: 'Active Drivers', value: drivers.length, icon: UserCircle, color: 'text-emerald-600', bg: 'bg-emerald-50', shadow: 'shadow-emerald-500/10', border: 'border-emerald-100', trend: 'Stable', trendPositive: true, subtitle: 'Ready for assignment' },
-    { title: 'Pending Issues', value: pendingComplaints, icon: MessageSquareWarning, color: 'text-amber-600', bg: 'bg-amber-50', shadow: 'shadow-amber-500/10', border: 'border-amber-100', trend: '-1', trendPositive: true, subtitle: 'Needs attention' },
-    { title: 'Est. Daily Fuel', value: `${totalFuelRequired.toFixed(0)}L`, icon: Droplet, color: 'text-orange-600', bg: 'bg-orange-50', shadow: 'shadow-orange-500/10', border: 'border-orange-100', trend: '+5%', trendPositive: false, subtitle: `Cost: ₹${totalFuelCost.toFixed(0)}` },
+    { title: 'Total Fleet', value: buses.length, icon: Bus, color: 'text-sky-600', bg: 'bg-sky-50', shadow: 'shadow-sky-500/10', border: 'border-sky-100', trend: `${activeBuses} active currently`, trendPositive: true, subtitle: 'Active Fleet' },
+    { title: 'Total Students', value: students.length, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50', shadow: 'shadow-indigo-500/10', border: 'border-indigo-100', trend: 'Registered in system', trendPositive: true, subtitle: 'Total Enrollment' },
+    { title: 'Active Drivers', value: drivers.length, icon: UserCircle, color: 'text-emerald-600', bg: 'bg-emerald-50', shadow: 'shadow-emerald-500/10', border: 'border-emerald-100', trend: 'Ready for assignment', trendPositive: true, subtitle: 'Total Drivers' },
+    { title: 'Pending Issues', value: pendingComplaints, icon: MessageSquareWarning, color: 'text-amber-600', bg: 'bg-amber-50', shadow: 'shadow-amber-500/10', border: 'border-amber-100', trend: `${resolvedComplaints} resolved`, trendPositive: pendingComplaints === 0, subtitle: 'Complaints tracking' },
+    { title: 'Est. Daily Fuel', value: `${totalFuelRequired.toFixed(0)}L`, icon: Droplet, color: 'text-orange-600', bg: 'bg-orange-50', shadow: 'shadow-orange-500/10', border: 'border-orange-100', trend: `Cost: ₹${totalFuelCost.toFixed(0)}`, trendPositive: false, subtitle: 'Daily Estimate' },
+    { title: 'Notifications', value: notifications.length, icon: Bell, color: 'text-pink-600', bg: 'bg-pink-50', shadow: 'shadow-pink-500/10', border: 'border-pink-100', trend: `${notifications.filter(n => n.status === 'sent').length} sent`, trendPositive: true, subtitle: 'Total Broadcasts' },
   ];
 
   const attendanceData = [
@@ -154,7 +156,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
         {statCards.map((stat, index) => (
           <Card key={index} className="group hover:-translate-y-1 transition-all duration-300">
             <CardContent className="p-6">
@@ -162,8 +164,7 @@ export default function AdminDashboard() {
                 <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} shadow-sm border ${stat.border} group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300`}>
                   <stat.icon className="w-6 h-6" />
                 </div>
-                <div className={`flex items-center text-xs font-bold px-2.5 py-1 rounded-full ${stat.trendPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                  {stat.trendPositive ? <ArrowUpRight className="w-3.5 h-3.5 mr-1" /> : <ArrowDownRight className="w-3.5 h-3.5 mr-1" />}
+                <div className={`flex items-center text-xs font-bold px-2.5 py-1 rounded-full ${stat.trendPositive ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 text-slate-600'}`}>
                   {stat.trend}
                 </div>
               </div>
@@ -235,6 +236,40 @@ export default function AdminDashboard() {
                   <Area type="monotone" dataKey="absent" stroke="#38bdf8" strokeWidth={4} fillOpacity={1} fill="url(#colorAbsent)" name="Complaints" activeDot={{ r: 8, strokeWidth: 0, fill: '#38bdf8' }} />
                 </AreaChart>
               </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity Card */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="border-b border-[#D6ECFA] pb-5 px-8 pt-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-indigo-500" />
+                  Recent Activity
+                </CardTitle>
+                <p className="text-sm text-slate-600 mt-1 font-medium">System activity and admin actions</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-[#D6ECFA] max-h-[320px] overflow-auto">
+              {activities.length > 0 ? activities.slice(0, 10).map((activity) => (
+                <div key={activity.id} className="p-5 flex items-start gap-4 hover:bg-slate-50 transition-colors">
+                  <div className="bg-indigo-50 p-2 rounded-full border border-indigo-100 shrink-0">
+                    <Activity className="w-4 h-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{activity.message}</p>
+                    <p className="text-xs font-medium text-slate-500 mt-1">
+                      {new Date(activity.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </p>
+                  </div>
+                </div>
+              )) : (
+                <div className="p-8 text-center text-slate-500 text-sm font-medium">No recent activities found.</div>
+              )}
             </div>
           </CardContent>
         </Card>

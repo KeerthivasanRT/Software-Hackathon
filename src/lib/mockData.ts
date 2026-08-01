@@ -147,6 +147,10 @@ export const mockComplaints: Complaint[] = [
 ];
 
 export const mockNotifications: Notification[] = [
-  { id: 'n1', title: 'Route Change', message: 'Route A will detour due to roadworks near Kunnathur.', targetRole: 'all', date: today.toISOString(), isRead: false },
-  { id: 'n2', title: 'Maintenance', message: 'BUS-003 is scheduled for maintenance this weekend.', targetRole: 'driver', date: subDays(today, 1).toISOString(), isRead: true },
+  { id: 'n1', title: 'Route Change', message: 'Tomorrow morning all buses will depart 15 minutes earlier due to road maintenance.', category: 'Route Update', priority: 'medium', targetRole: 'all', recipientType: 'all', status: 'sent', date: today.toISOString(), readBy: [], deletedBy: [] },
+  { id: 'n2', title: 'Maintenance', message: 'BUS-003 is scheduled for maintenance this weekend.', category: 'Maintenance Notice', priority: 'low', targetRole: 'driver', recipientType: 'all_drivers', status: 'sent', date: subDays(today, 1).toISOString(), readBy: ['d1', 'd2'], deletedBy: [] },
+  { id: 'n3', title: 'Bus Delay', message: 'Bus A is delayed by 10 minutes.', category: 'Bus Delay', priority: 'high', targetRole: 'all', recipientType: 'route_students', recipientIds: ['r1'], status: 'sent', date: new Date(today.getTime() - 1000 * 60 * 30).toISOString(), readBy: [], deletedBy: [] },
+  { id: 'n4', title: 'Holiday Notice', message: 'Transport services are unavailable on Independence Day.', category: 'Holiday Notice', priority: 'medium', targetRole: 'all', recipientType: 'all', status: 'sent', date: subDays(today, 3).toISOString(), readBy: ['st1', 'd1'], deletedBy: [] },
+  { id: 'n5', title: 'Placement Drive', message: 'Special buses have been arranged for Placement Drive.', category: 'General Announcement', priority: 'low', targetRole: 'student', recipientType: 'all_students', status: 'sent', date: new Date(today.getTime() - 1000 * 60 * 60 * 2).toISOString(), readBy: [], deletedBy: [] },
+  { id: 'n6', title: 'Bus Reassigned', message: 'Bus C has been reassigned due to maintenance.', category: 'Bus Breakdown', priority: 'emergency', targetRole: 'specific', recipientType: 'bus_drivers', recipientIds: ['b3'], status: 'sent', date: subDays(today, 2).toISOString(), readBy: [], deletedBy: [] },
 ];

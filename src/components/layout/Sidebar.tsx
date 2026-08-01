@@ -44,7 +44,7 @@ export function Sidebar({ role, className }: SidebarProps) {
       { name: 'Attendance', path: '/admin/attendance', icon: CalendarCheck },
       { name: 'Emergency History', path: '/admin/emergencies', icon: ShieldAlert },
       { name: 'Complaints', path: '/admin/complaints', icon: MessageSquare },
-      { name: 'Notifications', path: '/admin/notifications', icon: Bell },
+      { name: 'Notification Management', path: '/admin/notifications', icon: Bell },
     ],
     driver: [
       { name: 'Dashboard', path: '/driver/dashboard', icon: LayoutDashboard },
@@ -57,6 +57,7 @@ export function Sidebar({ role, className }: SidebarProps) {
       { name: 'My Route', path: '/student/route', icon: Navigation },
       { name: 'Attendance', path: '/student/attendance', icon: CalendarCheck },
       { name: 'Complaints', path: '/student/complaint', icon: MessageSquare },
+      { name: 'Notifications', path: '/student/notifications', icon: Bell },
       { name: 'Profile', path: '/student/profile', icon: Settings },
     ]
   };

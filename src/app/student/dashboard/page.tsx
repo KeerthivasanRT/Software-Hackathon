@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 
 export default function StudentDashboard() {
-  const { user, buses, drivers, routes, notifications, attendances } = useDataStore();
+  const { user, buses, drivers, routes, notifications, attendances, triggerEmergency, addNotification } = useDataStore();
   
   const studentRecord = user as any; 
   const assignedBus = buses.find(b => b.id === studentRecord?.assignedBusId) || buses[0];
@@ -16,7 +16,21 @@ export default function StudentDashboard() {
   const route = routes.find(r => r.id === assignedBus?.routeId) || routes[0];
   const pickupStop = route?.stops.find(s => s.id === studentRecord?.pickupStopId) || route?.stops[0];
   
-  const filteredNotifications = notifications.filter(n => n.targetRole === 'student' || n.targetRole === 'all');
+  const filteredNotifications = notifications.filter(n => {
+    if (n.status && n.status !== 'sent') return false;
+    if (n.deletedBy?.includes(user?.id || '')) return false;
+    if (n.recipientType === 'all') return true;
+    if (n.recipientType === 'all_students') return true;
+    if (n.recipientType === 'specific_student' && n.recipientIds?.includes(user?.id || '')) return true;
+    if (n.recipientType === 'route_students' && n.recipientIds?.includes(studentRecord?.assignedRouteId || '')) return true;
+    if (n.recipientType === 'bus_students' && n.recipientIds?.includes(studentRecord?.assignedBusId || '')) return true;
+    if (!n.recipientType && (n.targetRole === 'student' || n.targetRole === 'all')) return true;
+    return false;
+  }).sort((a, b) => {
+    if (a.priority === 'emergency' && b.priority !== 'emergency') return -1;
+    if (a.priority !== 'emergency' && b.priority === 'emergency') return 1;
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  }).slice(0, 5);
 
   const studentAttendances = attendances.filter(a => a.studentId === user?.id);
   const totalDays = studentAttendances.length;
@@ -134,15 +148,27 @@ export default function StudentDashboard() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-slate-100">
-              {filteredNotifications.map(notification => (
-                <div key={notification.id} className="p-6 hover:bg-slate-50/50 transition-colors">
-                  <div className="flex justify-between items-start mb-1">
-                    <h4 className="font-semibold text-slate-900">{notification.title}</h4>
+              {filteredNotifications.map(notification => {
+                const isRead = notification.readBy?.includes(user?.id || '') || notification.isRead;
+                return (
+                  <div key={notification.id} className="p-6 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-slate-900">{notification.title}</h4>
+                        {notification.priority === 'emergency' && (
+                          <span className="bg-red-100 text-red-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full animate-pulse">Emergency</span>
+                        )}
+                        {notification.priority === 'high' && (
+                          <span className="bg-orange-100 text-orange-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">High</span>
+                        )}
+                      </div>
+                      {!isRead && <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 shrink-0"></span>}
+                    </div>
+                    <p className="text-sm text-slate-500 leading-relaxed mt-2">{notification.message}</p>
+                    <span className="text-xs font-medium text-slate-400 mt-3 block">{new Date(notification.date).toLocaleDateString('en-US')}</span>
                   </div>
-                  <p className="text-sm text-slate-500 leading-relaxed mt-2">{notification.message}</p>
-                  <span className="text-xs font-medium text-slate-400 mt-3 block">{new Date(notification.date).toLocaleDateString('en-US')}</span>
-                </div>
-              ))}
+                );
+              })}
               {filteredNotifications.length === 0 && (
                 <div className="p-8 text-center text-slate-500">No announcements.</div>
               )}
