@@ -25,18 +25,20 @@ export default function DriverAttendancePage() {
   const assignedRoute = routes.find(r => r.id === assignedBus?.routeId) || routes[0];
   const assignedStudents = students.filter(s => s.assignedBusId === assignedBus?.id);
   
+  const assignedBusId = assignedBus?.id;
   const todayStr = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     const initial: Record<string, AttendanceStatus> = {};
-    assignedStudents.forEach(s => {
+    const currentAssignedStudents = students.filter(s => s.assignedBusId === assignedBusId);
+    currentAssignedStudents.forEach(s => {
       const todayAtt = attendances.find(a => a.studentId === s.id && a.date.startsWith(todayStr));
       if (todayAtt) {
         initial[s.id] = todayAtt.status;
       }
     });
     setLocalAttendance(initial);
-  }, [assignedStudents, attendances, todayStr]);
+  }, [assignedBusId, students, attendances, todayStr]);
 
   const filteredStops = assignedRoute.stops.filter(stop => 
     stop.name.toLowerCase().includes(searchTerm.toLowerCase())
