@@ -37,7 +37,7 @@ function DialogOverlay({
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-sky-950/20 backdrop-blur-sm duration-300 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-50 bg-slate-900/20 backdrop-blur-md duration-300 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -59,7 +59,7 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-3xl bg-white p-0 text-slate-900 shadow-xl shadow-sky-900/10 duration-300 outline-none sm:max-w-lg data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 overflow-hidden border border-[#D6ECFA]",
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-[28px] bg-white/90 backdrop-blur-[35px] p-0 text-slate-900 shadow-2xl duration-300 outline-none sm:max-w-lg data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 overflow-hidden border border-white/90 shadow-slate-900/10",
           className
         )}
         {...props}
@@ -71,7 +71,7 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-4 right-4 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900"
+                className="absolute top-4 right-4 h-8 w-8 rounded-full bg-slate-100/80 hover:bg-slate-200 text-slate-500 hover:text-slate-900"
                 size="icon-sm"
               />
             }
@@ -89,45 +89,21 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2 px-6 py-5 border-b border-[#D6ECFA] bg-sky-50", className)}
+      className={cn(
+        "flex flex-col gap-1 text-center sm:text-left bg-white/50 p-6 border-b border-white/60",
+        className
+      )}
       {...props}
     />
   )
 }
 
-function DialogFooter({
-  className,
-  showCloseButton = false,
-  children,
-  ...props
-}: React.ComponentProps<"div"> & {
-  showCloseButton?: boolean
-}) {
+function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-3 border-t border-[#D6ECFA] bg-sky-50 px-6 py-5 sm:flex-row sm:justify-end",
-        className
-      )}
-      {...props}
-    >
-      {children}
-      {showCloseButton && (
-        <DialogPrimitive.Close render={<Button variant="outline" />}>
-          Close
-        </DialogPrimitive.Close>
-      )}
-    </div>
-  )
-}
-
-function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
-  return (
-    <DialogPrimitive.Title
-      data-slot="dialog-title"
-      className={cn(
-        "font-heading text-lg font-bold leading-none tracking-tight text-slate-900",
+        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end bg-white/50 p-6 border-t border-white/60",
         className
       )}
       {...props}
@@ -135,17 +111,21 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   )
 }
 
-function DialogDescription({
-  className,
-  ...props
-}: DialogPrimitive.Description.Props) {
+function DialogTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <DialogPrimitive.Description
+    <div
+      data-slot="dialog-title"
+      className={cn("text-lg font-extrabold tracking-tight text-slate-900", className)}
+      {...props}
+    />
+  )
+}
+
+function DialogDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
       data-slot="dialog-description"
-      className={cn(
-        "text-sm text-slate-600 mt-1",
-        className
-      )}
+      className={cn("text-xs text-slate-500 font-medium mt-0.5", className)}
       {...props}
     />
   )

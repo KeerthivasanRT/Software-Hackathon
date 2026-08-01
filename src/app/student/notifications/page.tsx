@@ -95,8 +95,8 @@ export default function StudentNotificationsPage() {
                           </span>
                         )}
                       </div>
-                      <span className="text-xs font-medium text-slate-600 shrink-0">
-                        {new Date(notification.date).toLocaleString()}
+                      <span className="text-xs font-medium text-slate-600 shrink-0" suppressHydrationWarning>
+                        {new Date(notification.date).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}
                       </span>
                     </div>
                     <p className={`${isRead ? 'text-slate-600' : 'text-slate-700 font-medium'} text-sm leading-relaxed mb-3`}>

@@ -3,242 +3,255 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDataStore } from '@/lib/store';
+import { getApiUrl } from '@/lib/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Bus, ArrowRight, Lock, Mail, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import { BitLogo } from '@/components/ui/bit-logo';
 
 export default function LoginPage() {
   const router = useRouter();
   const login = useDataStore((state) => state.login);
-  const drivers = useDataStore((state) => state.drivers);
-  const students = useDataStore((state) => state.students);
   
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [activeTab, setActiveTab] = useState<'student' | 'driver' | 'admin'>('student');
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    
-    if (!name || !email || !password) {
-      setError('Please fill in all required fields.');
-      return;
-    }
-    
-    let role: 'admin' | 'driver' | 'student' | null = null;
-    let foundUserId: string | null = null;
-    const lowerEmail = email.toLowerCase();
-    const lowerName = name.toLowerCase();
-    
-    // Find driver by name or email (partial match)
-    const matchedDriver = drivers.find(d => 
-      d.email.toLowerCase() === lowerEmail || 
-      lowerEmail.includes(d.name.toLowerCase().split(' ').pop() || d.name.toLowerCase()) || 
-      d.name.toLowerCase().includes(lowerName)
-    );
-    if (matchedDriver) {
-      role = 'driver';
-      foundUserId = matchedDriver.id;
-    }
-    
-    // Find student by name or email (partial match)
-    if (!role) {
-      const matchedStudent = students.find(s => 
-        s.email.toLowerCase() === lowerEmail || 
-        s.name.toLowerCase().includes(lowerName)
-      );
-      if (matchedStudent) {
-        role = 'student';
-        foundUserId = matchedStudent.id;
+  const handleLoginSubmit = async (selectedRole: 'admin' | 'driver' | 'student', defaultEmail: string) => {
+    setLoading(true);
+    setErrorMessage('');
+
+    const targetEmail = email.trim() || defaultEmail;
+    const targetPassword = password || (selectedRole === 'admin' ? 'Admin@123' : selectedRole === 'driver' ? 'Driver@123' : 'Student@123');
+
+    try {
+      const response = await fetch(getApiUrl('/api/auth/login'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: targetEmail, password: targetPassword, role: selectedRole })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        login(data.user.role, data.user.id, data.user.email);
+        router.push(`/${data.user.role}/dashboard`);
+        return;
+      } else {
+        setErrorMessage(data.message || 'Invalid Email or Password');
       }
+    } catch (err) {
+      setErrorMessage('Unable to connect to authentication server');
+    } finally {
+      setLoading(false);
     }
-    
-    if (!role && (lowerEmail.includes('@admin') || lowerEmail === 'admin@college.edu')) {
-      role = 'admin';
-    }
-    
-    if (!role) {
-      setError('Invalid credentials. Please use an Admin, Student or Driver account.');
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    // Simulate authentication delay
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
-    login(role, foundUserId, lowerEmail);
-    router.push(`/${role}/dashboard`);
   };
 
   return (
-    <div className="min-h-screen flex w-full bg-white">
-      {/* Left Side: Branding / Illustration */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden items-center justify-center flex-col p-12 text-center">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 opacity-100 z-0" />
-        
-        {/* Abstract decorative elements */}
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob animation-delay-2000" />
-        
-        <div className="relative z-10 max-w-md space-y-8 flex flex-col items-center">
-          <div className="bg-white/5 p-5 rounded-3xl backdrop-blur-md border border-white/10 shadow-2xl">
-            <MapPin className="w-12 h-12 text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)]" />
-          </div>
-          
-          <div className="space-y-4">
-            <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
-              Smart Transport
-              <br />
-              Management Portal
-            </h1>
-            <p className="text-lg text-slate-300 font-medium tracking-wide">
-              Digitizing Campus Transportation.
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#005BAC] via-[#1976D2] to-[#004687] flex flex-col justify-between p-4 md:p-8 relative overflow-hidden text-white selection:bg-white/20 selection:text-white">
+      {/* Background Subtle Geometric Blobs */}
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-sky-400/20 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="pt-12">
-            <div className="flex items-center space-x-[-12px] opacity-80">
-               <div className="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-900 shadow-md" />
-               <div className="w-10 h-10 rounded-full bg-slate-700 border-2 border-slate-900 shadow-md" />
-               <div className="w-10 h-10 rounded-full bg-slate-600 border-2 border-slate-900 shadow-md" />
-               <div className="w-10 h-10 rounded-full bg-slate-900 border-2 border-slate-900 flex items-center justify-center text-xs font-bold text-white shadow-md">+2k</div>
-            </div>
-            <p className="text-sm text-slate-400 mt-4 font-medium">Trusted by over 2,000 students and staff.</p>
-          </div>
+      {/* TOP HEADER */}
+      <header className="flex items-center justify-between max-w-7xl mx-auto w-full relative z-10">
+        <BitLogo variant="light" size="lg" />
+        <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-sky-100 backdrop-blur-md">
+          <Sparkles className="w-3.5 h-3.5 text-sky-300" />
+          <span>Official Campus Telematics Portal</span>
         </div>
-      </div>
+      </header>
 
-      {/* Right Side: Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-24 bg-slate-50 lg:bg-white relative">
-        <div className="w-full max-w-sm space-y-8 relative z-10">
+      {/* MAIN LOGIN CARD CONTAINER */}
+      <main className="my-auto py-12 flex flex-col items-center justify-center relative z-10">
+        <div className="w-full max-w-md space-y-6">
           
-          <div className="space-y-2 text-center lg:text-left">
-            <div className="lg:hidden flex justify-center mb-6">
-               <div className="bg-blue-600 p-3 rounded-2xl shadow-xl shadow-blue-600/20">
-                 <MapPin className="w-6 h-6 text-white" />
-               </div>
-            </div>
-            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Welcome back</h2>
-            <p className="text-slate-500 font-medium">Sign in to your institutional account to continue.</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            
-            {error && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium animate-in fade-in slide-in-from-top-1 flex items-start">
-                <svg className="w-5 h-5 mr-2 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {error}
+          {/* LOGIN CARD */}
+          <Card className="bg-white/95 backdrop-blur-xl border border-white text-[#1E293B] shadow-2xl rounded-3xl p-2">
+            <CardHeader className="text-center pb-4 border-b border-[#D6EAF8]/60 bg-transparent">
+              <div className="w-14 h-14 bg-[#EAF4FF] text-[#005BAC] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner border border-[#D6EAF8]">
+                <Bus className="w-7 h-7" />
               </div>
-            )}
+              <CardTitle className="text-2xl font-extrabold text-[#005BAC] tracking-tight">
+                BIT Transport Portal
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-500 font-medium mt-1">
+                Bannari Amman Institute of Technology
+              </CardDescription>
+              <p className="text-[11px] font-bold text-[#1976D2] mt-1 italic">
+                "Smart, Secure and Efficient Campus Transportation"
+              </p>
+            </CardHeader>
 
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-slate-700 font-semibold text-sm">Full Name / Username</Label>
-                <Input 
-                  id="name"
-                  type="text" 
-                  placeholder="John Doe" 
-                  className="h-12 bg-white lg:bg-slate-50/50 border-slate-200 focus-visible:ring-blue-600 transition-all rounded-xl shadow-sm text-base"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-700 font-semibold text-sm">Institutional Email Address</Label>
-                <Input 
-                  id="email"
-                  type="email" 
-                  placeholder="john@student.com" 
-                  className="h-12 bg-white lg:bg-slate-50/50 border-slate-200 focus-visible:ring-blue-600 transition-all rounded-xl shadow-sm text-base"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-slate-700 font-semibold text-sm">Password</Label>
-                  <a href="#" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors" tabIndex={-1}>
-                    Forgot password?
-                  </a>
+            <CardContent className="pt-6 space-y-6">
+              {errorMessage && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-xl flex items-center gap-2 animate-in fade-in">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                  <span>{errorMessage}</span>
                 </div>
-                <div className="relative">
-                  <Input 
-                    id="password"
-                    type={showPassword ? 'text' : 'password'} 
-                    placeholder="••••••••" 
-                    className="h-12 bg-white lg:bg-slate-50/50 border-slate-200 focus-visible:ring-blue-600 transition-all rounded-xl shadow-sm text-base pr-12"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors rounded-r-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-1"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2 pt-1">
-              <input
-                type="checkbox"
-                id="remember"
-                className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600 focus:ring-offset-1 transition-colors cursor-pointer"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                disabled={isLoading}
-              />
-              <Label htmlFor="remember" className="text-sm text-slate-600 cursor-pointer font-medium">Remember me for 30 days</Label>
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full h-12 text-base font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 transition-all group mt-2"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Authenticating...
-                </>
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </>
               )}
-            </Button>
-          </form>
 
-          <div className="text-center mt-8">
-            <p className="text-sm text-slate-500 font-medium">
-              Need help? <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">Contact IT Support</a>
-            </p>
+              <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as any); setErrorMessage(''); }} className="w-full">
+                <TabsList className="grid grid-cols-3 bg-[#EAF4FF] p-1 rounded-xl border border-[#D6EAF8] mb-6">
+                  <TabsTrigger value="student" className="text-xs font-bold rounded-lg data-[state=active]:bg-[#005BAC] data-[state=active]:text-white">
+                    Student
+                  </TabsTrigger>
+                  <TabsTrigger value="driver" className="text-xs font-bold rounded-lg data-[state=active]:bg-[#005BAC] data-[state=active]:text-white">
+                    Driver
+                  </TabsTrigger>
+                  <TabsTrigger value="admin" className="text-xs font-bold rounded-lg data-[state=active]:bg-[#005BAC] data-[state=active]:text-white">
+                    Admin
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* STUDENT LOGIN TAB */}
+                <TabsContent value="student" className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-700">Student Email / Roll No</Label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      <Input
+                        type="text"
+                        placeholder="arun@student.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10 h-11 text-xs border-[#D6EAF8]"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-700">Password</Label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      <Input
+                        type="password"
+                        placeholder="Student@123"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10 h-11 text-xs border-[#D6EAF8]"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => handleLoginSubmit('student', 'arun@student.com')}
+                    disabled={loading}
+                    className="w-full h-11 btn-bit-gradient text-xs font-extrabold shadow-lg flex items-center justify-center"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                      <>
+                        <span>Sign In as Student</span>
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
+                  </Button>
+                </TabsContent>
+
+                {/* DRIVER LOGIN TAB */}
+                <TabsContent value="driver" className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-700">Driver Email / Employee ID</Label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      <Input
+                        type="text"
+                        placeholder="murugan@driver.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10 h-11 text-xs border-[#D6EAF8]"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-700">Password</Label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      <Input
+                        type="password"
+                        placeholder="Driver@123"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10 h-11 text-xs border-[#D6EAF8]"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => handleLoginSubmit('driver', 'murugan@driver.com')}
+                    disabled={loading}
+                    className="w-full h-11 btn-bit-gradient text-xs font-extrabold shadow-lg flex items-center justify-center"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                      <>
+                        <span>Sign In as Driver</span>
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
+                  </Button>
+                </TabsContent>
+
+                {/* ADMIN LOGIN TAB */}
+                <TabsContent value="admin" className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-700">Admin Email</Label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      <Input
+                        type="email"
+                        placeholder="admin@admin.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10 h-11 text-xs border-[#D6EAF8]"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-700">Password</Label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      <Input
+                        type="password"
+                        placeholder="Admin@123"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10 h-11 text-xs border-[#D6EAF8]"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => handleLoginSubmit('admin', 'admin@admin.com')}
+                    disabled={loading}
+                    className="w-full h-11 btn-bit-gradient text-xs font-extrabold shadow-lg flex items-center justify-center"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                      <>
+                        <span>Sign In to Executive Portal</span>
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* QUICK DEMO BADGE */}
+          <div className="text-center text-xs text-sky-100 font-medium">
+            Campus Helpline: <strong className="text-white">+91 4289 226300</strong> • Sathyamangalam, Erode, Tamil Nadu
           </div>
         </div>
-      </div>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="text-center text-xs text-sky-200 font-medium relative z-10 pt-4 border-t border-white/10">
+        © 2026 <strong>Bannari Amman Institute of Technology</strong>. Smart Transport Management Portal.
+      </footer>
     </div>
   );
 }

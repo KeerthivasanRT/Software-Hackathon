@@ -1,0 +1,85 @@
+{
+  "info": {
+    "name": "BIT Smart Transport Complete Enterprise APIs (Phase 1 to 4)",
+    "description": "Comprehensive Postman Collection covering Authentication, Master Data, Daily Operations, and Management Operations APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Login Admin",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@admin.com\",\n  \"password\": \"Admin@123\"\n}"
+        },
+        "url": { "raw": "http://localhost:5000/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "auth", "login"] }
+      }
+    },
+    {
+      "name": "Analytics - System Summary",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "http://localhost:5000/api/analytics/summary", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "analytics", "summary"] }
+      }
+    },
+    {
+      "name": "Salary - Get All Driver Salaries",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "http://localhost:5000/api/salary", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "salary"] }
+      }
+    },
+    {
+      "name": "Fees - Get Student Transport Fees",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "http://localhost:5000/api/fees", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "fees"] }
+      }
+    },
+    {
+      "name": "Vehicle Inspection - Get Daily Reports",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "http://localhost:5000/api/inspections", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "inspections"] }
+      }
+    },
+    {
+      "name": "Fuel Logs - Get Logs",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "http://localhost:5000/api/fuel-logs", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "fuel-logs"] }
+      }
+    },
+    {
+      "name": "Trip History - Get Completed Trips",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "http://localhost:5000/api/trips", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "trips"] }
+      }
+    },
+    {
+      "name": "Calendar - Get Events",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "http://localhost:5000/api/calendar", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "calendar"] }
+      }
+    },
+    {
+      "name": "Maintenance - Get Maintenance Requests",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "http://localhost:5000/api/maintenance", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "maintenance"] }
+      }
+    }
+  ]
+}

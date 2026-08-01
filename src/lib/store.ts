@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { User, Bus, Student, Driver, Route, Attendance, Complaint, Notification, AttendanceStatus, Emergency, Activity } from '@/types';
-import { mockUsers, mockBuses, mockStudents, mockDrivers, mockRoutes, mockAttendance, mockComplaints, mockNotifications } from './mockData';
+import { getApiUrl } from './api';
+import { User, Bus, Student, Driver, Route, Attendance, Complaint, Notification, AttendanceStatus, Emergency, Activity, SalaryRecord, FeeRecord, VehicleInspection, FuelLog, TripRecord, CalendarScheduleEvent } from '@/types';
+import { mockUsers, mockBuses, mockStudents, mockDrivers, mockRoutes, mockAttendance, mockComplaints, mockNotifications, mockSalaryRecords, mockFeeRecords, mockEmergencies, mockInspections, mockFuelLogs, mockTripRecords, mockCalendarEvents } from './mockData';
 
 interface DataState {
   user: User | null;
@@ -51,10 +52,133 @@ interface DataState {
   emergencies: Emergency[];
   triggerEmergency: (emergency: Emergency) => void;
   resolveEmergency: (id: string, remarks?: string, actionTaken?: string) => void;
+  updateEmergencyStatus: (id: string, status: Emergency['status'], assignedStaff?: string, remarks?: string, actionTaken?: string) => void;
+  deleteEmergencyRecord: (id: string) => void;
+
+  salaryRecords: SalaryRecord[];
+  updateSalaryRecord: (record: SalaryRecord) => void;
+  paySalary: (salaryId: string, paymentData: { paymentMethod: 'Net Banking' | 'UPI' | 'Bank Transfer'; basicSalary?: number; allowances?: number; bonus?: number; deductions?: number; bankName?: string; accountNumberMasked?: string; ifscCode?: string }) => void;
+
+  feeRecords: FeeRecord[];
+  updateFeeRecord: (record: FeeRecord) => void;
+  addFeeRecord: (record: FeeRecord) => void;
+  payStudentFee: (feeId: string, paymentData: { paymentMethod: 'Net Banking' | 'UPI' | 'Debit Card' | 'Credit Card' | 'Cash'; lateFee?: number; scholarshipDiscount?: number }) => void;
+
+  vehicleInspections: VehicleInspection[];
+  addVehicleInspection: (inspection: VehicleInspection) => void;
+
+  fuelLogs: FuelLog[];
+  addFuelLog: (log: FuelLog) => void;
+
+  tripRecords: TripRecord[];
+  addTripRecord: (trip: TripRecord) => void;
+
+  calendarEvents: CalendarScheduleEvent[];
+  addScheduleEvent: (event: CalendarScheduleEvent) => void;
+
+  fetchBackendData: () => Promise<void>;
 }
 
-export const useDataStore = create<DataState>((set) => ({
+export const useDataStore = create<DataState>((set, get) => ({
   user: null,
+  fetchBackendData: async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) return;
+
+      const headers = { 'Authorization': `Bearer ${token}` };
+
+      // Fetch Students
+      const resStudents = await fetch(getApiUrl('/api/students'), { headers });
+      if (resStudents.ok) {
+        const data = await resStudents.json();
+        if (data.success && data.data && data.data.length > 0) {
+          const mappedStudents = data.data.map((s: any) => ({
+            id: s._id,
+            name: s.name,
+            email: s.email,
+            role: 'student',
+            studentId: s.registerNumber,
+            registerNumber: s.registerNumber,
+            department: s.department,
+            year: s.year,
+            phone: s.phone,
+            assignedBusId: s.assignedBus ? (s.assignedBus._id || s.assignedBus) : null,
+            assignedRouteId: s.assignedRoute ? (s.assignedRoute._id || s.assignedRoute) : null,
+            pickupStopId: s.pickupPoint ? (s.pickupPoint._id || s.pickupPoint) : null
+          }));
+          set({ students: mappedStudents });
+        }
+      }
+
+      // Fetch Drivers
+      const resDrivers = await fetch(getApiUrl('/api/drivers'), { headers });
+      if (resDrivers.ok) {
+        const data = await resDrivers.json();
+        if (data.success && data.data && data.data.length > 0) {
+          const mappedDrivers = data.data.map((d: any) => ({
+            id: d._id,
+            name: d.name,
+            email: d.email,
+            role: 'driver',
+            employeeId: d.employeeId,
+            licenseNumber: d.licenseNumber,
+            licenseExpiry: d.licenseExpiry,
+            experience: d.experience,
+            phone: d.phone,
+            status: d.status,
+            assignedBusId: d.assignedBus ? (d.assignedBus._id || d.assignedBus) : null,
+            assignedRouteId: d.assignedRoute ? (d.assignedRoute._id || d.assignedRoute) : null
+          }));
+          set({ drivers: mappedDrivers });
+        }
+      }
+
+      // Fetch Buses
+      const resBuses = await fetch(getApiUrl('/api/buses'), { headers });
+      if (resBuses.ok) {
+        const data = await resBuses.json();
+        if (data.success && data.data && data.data.length > 0) {
+          const mappedBuses = data.data.map((b: any) => ({
+            id: b._id,
+            busNumber: b.busNumber,
+            registrationNumber: b.registrationNumber,
+            busName: b.busNumber,
+            capacity: b.capacity,
+            driverId: b.driver ? (b.driver._id || b.driver) : null,
+            routeId: b.route ? (b.route._id || b.route) : null,
+            status: b.status
+          }));
+          set({ buses: mappedBuses });
+        }
+      }
+
+      // Fetch Routes
+      const resRoutes = await fetch(getApiUrl('/api/routes'), { headers });
+      if (resRoutes.ok) {
+        const data = await resRoutes.json();
+        if (data.success && data.data && data.data.length > 0) {
+          const mappedRoutes = data.data.map((r: any) => ({
+            id: r._id,
+            name: r.routeName,
+            distance: `${r.distance} km`,
+            estimatedTime: r.estimatedTime,
+            distanceKm: r.distance,
+            stops: (r.stops || []).map((st: any, idx: number) => ({
+              id: st._id || `stop-${idx}`,
+              name: st.name || `Stop ${idx + 1}`,
+              latitude: st.latitude || 11.5034,
+              longitude: st.longitude || 77.2444,
+              order: idx + 1
+            }))
+          }));
+          set({ routes: mappedRoutes });
+        }
+      }
+    } catch (err) {
+      console.warn('Backend sync warning (running local fallback):', err);
+    }
+  },
   login: (role, userId, email) => {
     let user: User | null = null;
     if (role === 'admin') {
@@ -273,11 +397,310 @@ export const useDataStore = create<DataState>((set) => ({
     return { activities: [newActivity, ...state.activities] };
   }),
   
-  emergencies: [],
-  triggerEmergency: (emergency) => set((state) => ({ emergencies: [emergency, ...state.emergencies] })),
+  emergencies: [...mockEmergencies],
+  triggerEmergency: (emergency) => set((state) => {
+    const adminNotification: Notification = {
+      id: `notif-emg-${Date.now()}`,
+      title: '🚨 New Emergency Alert',
+      message: `Emergency (${emergency.emergencyType || 'SOS Alert'}) reported by ${emergency.reporterName || 'User'} on ${emergency.routeName || 'Route'}. Location: ${emergency.pickupPoint}`,
+      category: 'Emergency Alert',
+      priority: 'emergency',
+      targetRole: 'admin',
+      recipientType: 'all',
+      status: 'sent',
+      date: new Date().toISOString(),
+      readBy: [],
+      deletedBy: []
+    };
+
+    const newActivity: Activity = {
+      id: `act-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      message: `🚨 Emergency ${emergency.id} (${emergency.emergencyType || 'SOS'}) reported by ${emergency.reporterName || 'User'}`,
+      date: new Date().toISOString()
+    };
+
+    return {
+      emergencies: [emergency, ...state.emergencies],
+      notifications: [adminNotification, ...state.notifications],
+      activities: [newActivity, ...state.activities]
+    };
+  }),
+
   resolveEmergency: (id, remarks, actionTaken) => set((state) => ({
     emergencies: state.emergencies.map(e => 
-      e.id === id ? { ...e, status: 'resolved', remarks, actionTaken } : e
+      e.id === id ? { ...e, status: 'Resolved', remarks, actionTaken } : e
     )
   })),
+
+  updateEmergencyStatus: (id, status, assignedStaff, remarks, actionTaken) => set((state) => {
+    let reporterId = '';
+    let reporterRole: any = 'all';
+
+    const newEmergencies = state.emergencies.map(e => {
+      if (e.id === id) {
+        reporterId = e.reporterId || '';
+        reporterRole = e.reportedBy || 'all';
+        return {
+          ...e,
+          status,
+          assignedStaff: assignedStaff !== undefined ? assignedStaff : e.assignedStaff,
+          remarks: remarks !== undefined ? remarks : e.remarks,
+          actionTaken: actionTaken !== undefined ? actionTaken : e.actionTaken,
+        };
+      }
+      return e;
+    });
+
+    const statusNotification: Notification = {
+      id: `notif-emg-upd-${Date.now()}`,
+      title: `🚨 Emergency Status Updated`,
+      message: `Your reported emergency (${id}) status has been updated to "${status}". ${assignedStaff ? `Assigned Staff: ${assignedStaff}.` : ''}`,
+      category: 'Emergency Update',
+      priority: 'high',
+      targetRole: reporterRole,
+      recipientType: reporterRole === 'student' ? 'specific_student' : (reporterRole === 'driver' ? 'specific_driver' : 'all'),
+      recipientIds: reporterId ? [reporterId] : [],
+      status: 'sent',
+      date: new Date().toISOString(),
+      readBy: [],
+      deletedBy: []
+    };
+
+    return {
+      emergencies: newEmergencies,
+      notifications: [statusNotification, ...state.notifications]
+    };
+  }),
+
+  deleteEmergencyRecord: (id) => set((state) => ({
+    emergencies: state.emergencies.filter(e => e.id !== id)
+  })),
+
+  salaryRecords: [...mockSalaryRecords],
+  updateSalaryRecord: (record) => set((state) => ({
+    salaryRecords: state.salaryRecords.map(s => s.id === record.id ? record : s)
+  })),
+  paySalary: (salaryId, paymentData) => set((state) => {
+    let updatedDriverName = '';
+    let updatedNetSalary = 0;
+    let updatedMethod = paymentData.paymentMethod || 'Net Banking';
+    let txnId = '';
+    let driverId = '';
+    let month = '';
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const newSalaryRecords = state.salaryRecords.map((s, idx) => {
+      if (s.id === salaryId) {
+        const basicSalary = paymentData.basicSalary ?? s.basicSalary;
+        const allowances = paymentData.allowances ?? s.allowances;
+        const bonus = paymentData.bonus ?? s.bonus;
+        const deductions = paymentData.deductions ?? s.deductions;
+        const netSalary = basicSalary + allowances + bonus - deductions;
+        
+        txnId = `TXN24080100${idx + 10}`;
+        updatedDriverName = s.driverName;
+        updatedNetSalary = netSalary;
+        driverId = s.driverId;
+        month = s.month;
+
+        return {
+          ...s,
+          basicSalary,
+          allowances,
+          bonus,
+          deductions,
+          netSalary,
+          paymentStatus: 'paid' as const,
+          paymentDate: formattedDate,
+          paymentMethod: paymentData.paymentMethod || s.paymentMethod,
+          bankName: paymentData.bankName || s.bankName,
+          accountNumberMasked: paymentData.accountNumberMasked || s.accountNumberMasked,
+          ifscCode: paymentData.ifscCode || s.ifscCode,
+          transactionId: txnId,
+        };
+      }
+      return s;
+    });
+
+    const salaryNotification: Notification = {
+      id: `notif-sal-${Date.now()}`,
+      title: '💰 Salary Credited',
+      message: `Dear ${updatedDriverName},\n\nYour salary for ${month} has been credited successfully.\n\nNet Salary:\n₹${updatedNetSalary.toLocaleString('en-IN')}\n\nPayment Method:\n${updatedMethod}\n\nTransaction ID:\n${txnId}\n\nDate:\n${formattedDate}`,
+      category: 'Salary Credit',
+      priority: 'high',
+      targetRole: 'driver',
+      recipientType: 'specific_driver',
+      recipientIds: [driverId],
+      status: 'sent',
+      date: now.toISOString(),
+      readBy: [],
+      deletedBy: []
+    };
+
+    const newActivity: Activity = {
+      id: `act-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      message: `Salary of ₹${updatedNetSalary.toLocaleString('en-IN')} credited to ${updatedDriverName} via ${updatedMethod} (TXN: ${txnId})`,
+      date: now.toISOString()
+    };
+
+    return {
+      salaryRecords: newSalaryRecords,
+      notifications: [salaryNotification, ...state.notifications],
+      activities: [newActivity, ...state.activities],
+    };
+  }),
+
+  feeRecords: [...mockFeeRecords],
+  addFeeRecord: (record) => set((state) => ({ feeRecords: [record, ...state.feeRecords] })),
+  updateFeeRecord: (record) => set((state) => ({
+    feeRecords: state.feeRecords.map(f => f.id === record.id ? record : f)
+  })),
+  payStudentFee: (feeId, paymentData) => set((state) => {
+    let studentName = '';
+    let studentId = '';
+    let totalPaid = 0;
+    let method = paymentData.paymentMethod || 'Net Banking';
+    let txnId = '';
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const newFeeRecords = state.feeRecords.map((f, idx) => {
+      if (f.id === feeId) {
+        const lateFee = paymentData.lateFee ?? f.lateFee;
+        const scholarshipDiscount = paymentData.scholarshipDiscount ?? f.scholarshipDiscount;
+        const totalAmount = f.transportFee + lateFee - scholarshipDiscount;
+        txnId = `TRN24080100${idx + 10}`;
+        studentName = f.studentName;
+        studentId = f.studentId;
+        totalPaid = totalAmount;
+
+        return {
+          ...f,
+          lateFee,
+          scholarshipDiscount,
+          totalAmount,
+          paidAmount: totalAmount,
+          pendingAmount: 0,
+          paymentStatus: 'paid' as const,
+          lastPaymentDate: formattedDate,
+          paymentMethod: method,
+          transactionId: txnId,
+        };
+      }
+      return f;
+    });
+
+    const feeNotification: Notification = {
+      id: `notif-fee-${Date.now()}`,
+      title: '💳 Transport Fee Payment Successful',
+      message: `Dear ${studentName},\n\nYour transport fee payment of ₹${totalPaid.toLocaleString('en-IN')} has been received successfully.\n\nTransaction ID:\n${txnId}\n\nPayment Method:\n${method}\n\nDate:\n${formattedDate}`,
+      category: 'Fee Payment',
+      priority: 'high',
+      targetRole: 'student',
+      recipientType: 'specific_student',
+      recipientIds: [studentId],
+      status: 'sent',
+      date: now.toISOString(),
+      readBy: [],
+      deletedBy: []
+    };
+
+    const newActivity: Activity = {
+      id: `act-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      message: `Transport fee payment of ₹${totalPaid.toLocaleString('en-IN')} received from ${studentName} via ${method} (TRN: ${txnId})`,
+      date: now.toISOString()
+    };
+
+    return {
+      feeRecords: newFeeRecords,
+      notifications: [feeNotification, ...state.notifications],
+      activities: [newActivity, ...state.activities],
+    };
+  }),
+
+  vehicleInspections: [...mockInspections],
+  addVehicleInspection: (inspection) => set((state) => {
+    const adminNotif: Notification = {
+      id: `notif-insp-${Date.now()}`,
+      title: '🚌 New Vehicle Safety Inspection',
+      message: `Driver ${inspection.driverName} completed safety inspection for ${inspection.busNumber} (${inspection.routeName}). Status: ${inspection.status}.`,
+      category: 'Vehicle Inspection',
+      priority: inspection.status === 'Unsafe' ? 'emergency' : (inspection.status === 'Needs Maintenance' ? 'high' : 'medium'),
+      targetRole: 'admin',
+      recipientType: 'all',
+      status: 'sent',
+      date: new Date().toISOString(),
+      readBy: [],
+      deletedBy: []
+    };
+
+    const activity: Activity = {
+      id: `act-insp-${Date.now()}`,
+      message: `Vehicle inspection submitted by ${inspection.driverName} for ${inspection.busNumber}: Status ${inspection.status}`,
+      date: new Date().toISOString()
+    };
+
+    return {
+      vehicleInspections: [inspection, ...state.vehicleInspections],
+      notifications: [adminNotif, ...state.notifications],
+      activities: [activity, ...state.activities]
+    };
+  }),
+
+  fuelLogs: [...mockFuelLogs],
+  addFuelLog: (log) => set((state) => {
+    const adminNotif: Notification = {
+      id: `notif-fuel-${Date.now()}`,
+      title: '⛽ New Fuel Refilling Recorded',
+      message: `Driver ${log.driverName} recorded ${log.fuelAddedLitres} L fuel refill (₹${log.fuelCost.toLocaleString('en-IN')}) for ${log.busNumber} at ${log.fuelStation}.`,
+      category: 'Fuel Log',
+      priority: 'medium',
+      targetRole: 'admin',
+      recipientType: 'all',
+      status: 'sent',
+      date: new Date().toISOString(),
+      readBy: [],
+      deletedBy: []
+    };
+
+    const activity: Activity = {
+      id: `act-fuel-${Date.now()}`,
+      message: `Fuel entry of ${log.fuelAddedLitres} L added by ${log.driverName} for ${log.busNumber}`,
+      date: new Date().toISOString()
+    };
+
+    return {
+      fuelLogs: [log, ...state.fuelLogs],
+      notifications: [adminNotif, ...state.notifications],
+      activities: [activity, ...state.activities]
+    };
+  }),
+
+  tripRecords: [...mockTripRecords],
+  addTripRecord: (trip) => set((state) => ({
+    tripRecords: [trip, ...state.tripRecords]
+  })),
+
+  calendarEvents: [...mockCalendarEvents],
+  addScheduleEvent: (event) => set((state) => {
+    const driverNotif: Notification = {
+      id: `notif-cal-${Date.now()}`,
+      title: `📅 ${event.category}: ${event.title}`,
+      message: `New schedule update: ${event.title} on ${event.date}. ${event.description || ''}`,
+      category: 'Schedule Update',
+      priority: event.category === 'Holiday' ? 'medium' : 'high',
+      targetRole: 'driver',
+      recipientType: 'all',
+      status: 'sent',
+      date: new Date().toISOString(),
+      readBy: [],
+      deletedBy: []
+    };
+
+    return {
+      calendarEvents: [event, ...state.calendarEvents],
+      notifications: [driverNotif, ...state.notifications]
+    };
+  }),
 }));

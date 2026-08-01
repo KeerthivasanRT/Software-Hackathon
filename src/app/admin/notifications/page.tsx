@@ -234,7 +234,7 @@ export default function NotificationManagementPage() {
                       </div>
                       <p className="text-sm text-slate-600 mb-3">{n.message}</p>
                       <div className="flex items-center text-xs text-slate-500 gap-4">
-                        <span className="flex items-center gap-1 font-medium"><Calendar className="w-3.5 h-3.5" /> {new Date(n.date).toLocaleString()}</span>
+                        <span className="flex items-center gap-1 font-medium" suppressHydrationWarning><Calendar className="w-3.5 h-3.5" /> {new Date(n.date).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}</span>
                         <span className="flex items-center gap-1 font-medium bg-sky-50 text-sky-700 px-2 py-0.5 rounded-md">
                           To: {n.recipientType?.replace('_', ' ').toUpperCase() || n.targetRole.toUpperCase()}
                         </span>
@@ -282,8 +282,8 @@ export default function NotificationManagementPage() {
                       </div>
                       <p className="text-sm text-slate-600 mb-3 line-clamp-1">{n.message}</p>
                       {n.sendTime && (
-                         <div className="text-xs font-semibold text-blue-600 flex items-center gap-1">
-                           <Clock className="w-3.5 h-3.5" /> Scheduled for: {new Date(n.sendTime).toLocaleString()}
+                         <div className="text-xs font-semibold text-blue-600 flex items-center gap-1" suppressHydrationWarning>
+                           <Clock className="w-3.5 h-3.5" /> Scheduled for: {new Date(n.sendTime).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}
                          </div>
                       )}
                     </div>

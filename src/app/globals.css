@@ -40,137 +40,116 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-  
-  --shadow-premium: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-premium-hover: 0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
-  --shadow-premium-active: 0 2px 6px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02);
-  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
 }
 
 :root {
-  /* Premium Light Theme */
-  --background: oklch(0.99 0 0); /* Off-white #FCFCFC */
-  --foreground: oklch(0.2 0.01 240); /* Slate 900 */
+  /* Bannari Amman Institute of Technology (BIT) Official Transport Palette */
+  --background: #EAF4FF;
+  --foreground: #1E293B;
   
-  --card: oklch(1 0 0); /* Pure White */
-  --card-foreground: oklch(0.2 0.01 240); /* Slate 900 */
+  --card: #F8FCFF;
+  --card-foreground: #1E293B;
   
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.01 240);
+  --popover: #FFFFFF;
+  --popover-foreground: #1E293B;
   
-  /* Deep Navy Primary */
-  --primary: oklch(0.25 0.03 260); /* Deep Navy #0F172A */
-  --primary-foreground: oklch(0.99 0 0); /* White */
+  --primary: #005BAC;
+  --primary-foreground: #FFFFFF;
   
-  /* Slate Secondary */
-  --secondary: oklch(0.96 0.01 240); /* Slate 100 */
-  --secondary-foreground: oklch(0.3 0.02 240); /* Slate 800 */
+  --secondary: #1976D2;
+  --secondary-foreground: #FFFFFF;
   
-  --muted: oklch(0.96 0.01 240); /* Slate 100 */
-  --muted-foreground: oklch(0.5 0.02 240); /* Slate 500 */
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
   
-  --accent: oklch(0.96 0.01 240);
-  --accent-foreground: oklch(0.2 0.01 240);
+  --accent: #42A5F5;
+  --accent-foreground: #FFFFFF;
   
-  /* Premium Colors */
-  --destructive: oklch(0.55 0.2 20); /* Elegant Ruby Red */
-  --border: oklch(0.93 0.01 240); /* Slate 200 */
-  --input: oklch(0.93 0.01 240);
+  --destructive: #EF4444;
+  --border: #D6EAF8;
+  --input: #FFFFFF;
   
-  /* Electric Blue Highlights */
-  --ring: oklch(0.5 0.15 250); /* Blue 600 */
+  --ring: #005BAC;
   
-  --chart-1: oklch(0.5 0.15 250); /* Blue */
-  --chart-2: oklch(0.6 0.1 160); /* Emerald */
-  --chart-3: oklch(0.7 0.15 40); /* Amber */
-  --chart-4: oklch(0.4 0.15 300); /* Purple */
-  --chart-5: oklch(0.3 0.1 260); /* Navy */
+  --chart-1: #005BAC;
+  --chart-2: #1976D2;
+  --chart-3: #42A5F5;
+  --chart-4: #22C55E;
+  --chart-5: #F59E0B;
   
-  --radius: 0.75rem; /* Smoother default radius */
+  --radius: 1.25rem; /* 20px rounded corners */
   
-  /* Sidebar */
-  --sidebar: oklch(1 0 0 / 70%); /* Glass Sidebar */
-  --sidebar-foreground: oklch(0.3 0.02 240);
-  --sidebar-primary: oklch(0.25 0.03 260);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.96 0.01 240 / 50%);
-  --sidebar-accent-foreground: oklch(0.2 0.01 240);
-  --sidebar-border: oklch(0.93 0.01 240 / 50%);
-  --sidebar-ring: oklch(0.5 0.15 250);
+  --sidebar: linear-gradient(180deg, #005BAC 0%, #1976D2 100%);
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #FFFFFF;
+  --sidebar-primary-foreground: #005BAC;
+  --sidebar-accent: rgba(255, 255, 255, 0.15);
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.2);
+  --sidebar-ring: #FFFFFF;
 }
 
-.dark {
-  --background: oklch(0.15 0.02 260);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.2 0.02 260);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.2 0.02 260);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.98 0 0);
-  --primary-foreground: oklch(0.15 0.02 260);
-  --secondary: oklch(0.25 0.02 260);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.25 0.02 260);
-  --muted-foreground: oklch(0.7 0.02 260);
-  --accent: oklch(0.25 0.02 260);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.6 0.2 20);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.5 0.15 250);
-  --chart-1: oklch(0.6 0.15 250);
-  --chart-2: oklch(0.7 0.1 160);
-  --chart-3: oklch(0.8 0.15 40);
-  --chart-4: oklch(0.5 0.15 300);
-  --chart-5: oklch(0.4 0.1 260);
-  --sidebar: oklch(0.2 0.02 260 / 70%);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.6 0.15 250);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.25 0.02 260 / 50%);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.5 0.15 250);
+body {
+  background-color: #EAF4FF;
+  color: #1E293B;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 91, 172, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(25, 118, 210, 0.05) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(66, 165, 245, 0.05) 0px, transparent 50%);
+  background-attachment: fixed;
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
+/* BIT Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #EAF4FF;
+}
+::-webkit-scrollbar-thumb {
+  background: #93C5FD;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #005BAC;
 }
 
-@layer utilities {
-  .shadow-premium {
-    box-shadow: var(--shadow-premium);
-  }
-  .shadow-premium-hover {
-    box-shadow: var(--shadow-premium-hover);
-  }
-  .shadow-premium-active {
-    box-shadow: var(--shadow-premium-active);
-  }
-  .glass-panel {
-    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-premium;
-  }
-  .glass-header {
-    @apply bg-white/60 backdrop-blur-md border-b border-white/20;
-  }
-  .text-glow {
-    text-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
-  }
+/* BIT Premium Card Effect */
+.bit-card {
+  background: #F8FCFF;
+  border: 1px solid #D6EAF8;
+  box-shadow: 0 10px 30px -10px rgba(0, 91, 172, 0.08);
+  border-radius: 20px;
+}
+
+/* Smooth Lift Hover */
+.card-hover-effect {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover-effect:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px -10px rgba(0, 91, 172, 0.15);
+  border-color: #42A5F5;
+}
+
+/* BIT Gradient Button */
+.btn-bit-gradient {
+  background: linear-gradient(135deg, #005BAC 0%, #1976D2 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  border-radius: 9999px;
+  box-shadow: 0 4px 15px rgba(0, 91, 172, 0.25);
+  transition: all 0.25s ease;
+}
+.btn-bit-gradient:hover {
+  background: linear-gradient(135deg, #004687 0%, #1565C0 100%);
+  box-shadow: 0 6px 20px rgba(0, 91, 172, 0.35);
+  transform: translateY(-2px);
 }

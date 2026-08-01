@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { MapPin, Save, Route as RouteIcon, Navigation, AlertCircle, Bus as BusIcon, UserCircle, Users, Trash2, Edit2 } from 'lucide-react';
+import { MapPin, Save, Route as RouteIcon, Navigation, AlertCircle, Bus as BusIcon, UserCircle, Users, Trash2, Edit2, ArrowUp, ArrowDown, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const RouteMap = dynamic(() => import('@/components/map/RouteMap'), { ssr: false });
@@ -30,21 +30,56 @@ export default function RoutesPage() {
   const [editingRoute, setEditingRoute] = useState<Route | null>(null);
   const [editAssignedDriverId, setEditAssignedDriverId] = useState<string>('');
   const [editAssignedBusId, setEditAssignedBusId] = useState<string>('');
+  const [saveError, setSaveError] = useState<string>('');
 
-  const handleMapClick = (lat: number, lng: number) => {
+  const handleMapClick = async (lat: number, lng: number) => {
     if (!isCreating) return;
+    let locationName = `Stop ${newStops.length + 1}`;
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
+        headers: { 'Accept-Language': 'en-US,en;q=0.9', 'User-Agent': 'SmartTransportPortal/1.0' }
+      });
+      const data = await res.json();
+      if (data && data.display_name) {
+        locationName = data.display_name.split(',').slice(0, 2).join(',').trim();
+      }
+    } catch (err) {
+      console.error(err);
+    }
     const newStop: Stop = {
       id: `new-${Date.now()}`,
-      name: `Stop ${newStops.length + 1}`,
+      name: locationName,
       latitude: lat,
       longitude: lng,
       order: newStops.length + 1,
     };
-    setNewStops([...newStops, newStop]);
+    setNewStops(prev => [...prev, newStop]);
   };
 
   const handleStopNameChange = (id: string, name: string) => {
-    setNewStops(newStops.map(s => s.id === id ? { ...s, name } : s));
+    setNewStops(prev => prev.map(s => s.id === id ? { ...s, name } : s));
+  };
+
+  const moveStopUp = (index: number) => {
+    if (index === 0) return;
+    const updated = [...newStops];
+    [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+    updated.forEach((s, i) => s.order = i + 1);
+    setNewStops(updated);
+  };
+
+  const moveStopDown = (index: number) => {
+    if (index === newStops.length - 1) return;
+    const updated = [...newStops];
+    [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+    updated.forEach((s, i) => s.order = i + 1);
+    setNewStops(updated);
+  };
+
+  const removeStop = (id: string) => {
+    const updated = newStops.filter(s => s.id !== id);
+    updated.forEach((s, i) => s.order = i + 1);
+    setNewStops(updated);
   };
 
   const startCreating = () => {
@@ -52,10 +87,19 @@ export default function RoutesPage() {
     setIsCreating(true);
     setNewStops([]);
     setRouteName('');
+    setSaveError('');
   };
 
   const saveRoute = () => {
-    if (!routeName || newStops.length < 2) return;
+    setSaveError('');
+    if (newStops.length < 2) {
+      setSaveError("Please select at least an Origin and a Destination.");
+      return;
+    }
+    if (!routeName) {
+      setSaveError("Please provide a Route Name.");
+      return;
+    }
     const newRoute: Route = {
       id: `r${Date.now()}`,
       name: routeName,
@@ -196,15 +240,32 @@ export default function RoutesPage() {
                     ) : (
                       <div className="space-y-2 pr-2">
                         {newStops.map((stop, i) => (
-                          <div key={stop.id} className="flex items-center space-x-3 bg-white p-2.5 rounded-lg border border-[#D6ECFA] shadow-sm">
-                            <span className="text-xs font-bold bg-blue-100 text-sky-600 w-6 h-6 flex items-center justify-center rounded-full shrink-0">
-                              {i + 1}
-                            </span>
-                            <Input 
-                              value={stop.name} 
-                              onChange={(e) => handleStopNameChange(stop.id, e.target.value)}
-                              className="h-8 text-sm border-transparent hover:border-[#D6ECFA] focus-visible:border-blue-500 focus-visible:ring-0 shadow-none px-2"
-                            />
+                          <div key={stop.id} className="flex items-center justify-between bg-white p-2.5 rounded-lg border border-[#D6ECFA] shadow-sm">
+                            <div className="flex items-center space-x-3 w-full">
+                              <span className="text-xs font-bold bg-blue-100 text-sky-600 w-6 h-6 flex items-center justify-center rounded-full shrink-0">
+                                {i + 1}
+                              </span>
+                              <div className="flex flex-col w-full">
+                                <Input 
+                                  value={stop.name} 
+                                  onChange={(e) => handleStopNameChange(stop.id, e.target.value)}
+                                  className="h-7 text-sm font-semibold border-transparent hover:border-[#D6ECFA] focus-visible:border-blue-500 focus-visible:ring-0 shadow-none px-1 py-0 bg-transparent"
+                                />
+                                <span className="text-[10px] text-slate-500 font-mono px-1">{stop.latitude.toFixed(5)}, {stop.longitude.toFixed(5)}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0 ml-2">
+                              <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-500 hover:text-sky-600" onClick={() => moveStopUp(i)} disabled={i === 0}>
+                                <ArrowUp className="w-3 h-3" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-500 hover:text-sky-600" onClick={() => moveStopDown(i)} disabled={i === newStops.length - 1}>
+                                <ArrowDown className="w-3 h-3" />
+                              </Button>
+                              <div className="w-px h-3 bg-slate-200 mx-0.5" />
+                              <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-500 hover:text-red-600" onClick={() => removeStop(stop.id)}>
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -213,7 +274,13 @@ export default function RoutesPage() {
                 </div>
                 
                 <div className="space-y-3 pt-2">
-                  <Button onClick={saveRoute} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg h-11 font-semibold shadow-sm" disabled={newStops.length < 2 || !routeName}>
+                  {saveError && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-sm font-semibold rounded-lg flex items-center">
+                      <AlertCircle className="w-4 h-4 mr-2 shrink-0" />
+                      {saveError}
+                    </div>
+                  )}
+                  <Button onClick={saveRoute} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg h-11 font-semibold shadow-sm">
                     <Save className="w-4 h-4 mr-2" />
                     Save Route
                   </Button>

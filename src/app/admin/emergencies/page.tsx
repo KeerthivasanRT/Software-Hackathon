@@ -1,362 +1,426 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useDataStore } from '@/lib/store';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Search, Filter, X, ShieldAlert, Calendar, PhoneCall, Bus, Navigation, Clock, UserCircle, Activity, ArrowRight, ShieldCheck, MapPin, AlertTriangle } from 'lucide-react';
 import { Emergency } from '@/types';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ShieldAlert, AlertTriangle, CheckCircle2, Clock, MapPin, Search, Filter, PhoneCall, Bus as BusIcon, Navigation, UserCheck, Trash2, Edit2, ShieldCheck, Siren, Activity } from 'lucide-react';
 
-export default function AdminEmergencyHistoryPage() {
-  const { emergencies, drivers, students, buses, routes } = useDataStore();
-  
-  // Search & Filters State
+const RouteMap = dynamic(() => import('@/components/map/RouteMap'), { ssr: false });
+
+export default function AdminEmergencyControlCenter() {
+  const { emergencies, drivers, students, buses, routes, updateEmergencyStatus, deleteEmergencyRecord } = useDataStore();
+
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterDate, setFilterDate] = useState('');
-  const [filterReporter, setFilterReporter] = useState<'all'|'driver'|'student'>('all');
-  const [filterRoute, setFilterRoute] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [filterStatus, setFilterStatus] = useState<Emergency['status'] | ''>('');
-  
-  const [showFilters, setShowFilters] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [routeFilter, setRouteFilter] = useState<string>('all');
+
+  // Modal State
   const [selectedEmergency, setSelectedEmergency] = useState<Emergency | null>(null);
+  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+  const [assignedStaff, setAssignedStaff] = useState<string>('');
+  const [newStatus, setNewStatus] = useState<Emergency['status']>('Active');
+  const [actionRemarks, setActionRemarks] = useState<string>('');
 
-  const filteredEmergencies = emergencies.filter(e => {
-    const isStudent = e.reportedBy === 'student';
-    const driver = drivers.find(d => d.id === e.driverId);
-    const student = students.find(s => s.id === e.studentId);
-    
-    // Search Term (Emergency ID or Reporter Name)
-    const matchesSearch = 
-      e.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      (isStudent ? student?.name.toLowerCase().includes(searchTerm.toLowerCase()) : driver?.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    if (!matchesSearch) return false;
-    
-    // Advanced Filters
-    if (filterDate && !e.date.startsWith(filterDate)) return false;
-    if (filterStatus && e.status !== filterStatus) return false;
-    if (filterReporter !== 'all' && (e.reportedBy || 'driver') !== filterReporter) return false;
-    if (filterRoute && e.routeId !== filterRoute) return false;
-    if (filterType && e.emergencyType !== filterType && isStudent) return false;
-
-    return true;
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  const resetFilters = () => {
-    setFilterDate('');
-    setFilterReporter('all');
-    setFilterRoute('');
-    setFilterType('');
-    setFilterStatus('');
-    setSearchTerm('');
+  const openManageModal = (emg: Emergency) => {
+    setSelectedEmergency(emg);
+    setAssignedStaff(emg.assignedStaff || '');
+    setNewStatus(emg.status || 'Active');
+    setActionRemarks(emg.remarks || emg.actionTaken || '');
+    setIsManageModalOpen(true);
   };
 
-  const activeFiltersCount = [filterDate, filterReporter !== 'all' ? filterReporter : '', filterRoute, filterType, filterStatus].filter(Boolean).length;
+  const handleSaveEmergencyUpdate = () => {
+    if (!selectedEmergency) return;
+    updateEmergencyStatus(
+      selectedEmergency.id,
+      newStatus,
+      assignedStaff,
+      actionRemarks,
+      actionRemarks
+    );
+    setIsManageModalOpen(false);
+  };
+
+  // Metrics
+  const activeCount = emergencies.filter(e => e.status === 'Active' || e.status === 'Acknowledged' || e.status === 'In Progress' || e.status === 'active').length;
+  const resolvedCount = emergencies.filter(e => e.status === 'Resolved' || e.status === 'Closed' || e.status === 'resolved').length;
+  const todayCount = emergencies.filter(e => {
+    const d = new Date(e.date);
+    const today = new Date();
+    return d.toDateString() === today.toDateString();
+  }).length;
+  const avgResponseTime = "4.5 mins";
+
+  // Filtered List
+  const filteredEmergencies = emergencies.filter(e => {
+    const reporterName = e.reporterName || (e.reportedBy === 'student' ? students.find(s => s.id === e.reporterId)?.name : drivers.find(d => d.id === e.reporterId)?.name) || '';
+    const regOrEmp = e.registerNumber || e.employeeId || '';
+    const matchesSearch = e.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          reporterName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          regOrEmp.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesType = typeFilter === 'all' || e.emergencyType === typeFilter;
+    const matchesStatus = statusFilter === 'all' || e.status === statusFilter;
+    const matchesRoute = routeFilter === 'all' || e.routeId === routeFilter;
+
+    return matchesSearch && matchesType && matchesStatus && matchesRoute;
+  });
+
+  // Active emergencies with coordinates for Map rendering
+  const activeEmergencyStops = emergencies
+    .filter(e => (e.status === 'Active' || e.status === 'In Progress' || e.status === 'active') && e.latitude && e.longitude)
+    .map((e, idx) => ({
+      id: e.id,
+      name: `🚨 ${e.emergencyType}: ${e.pickupPoint}`,
+      latitude: e.latitude!,
+      longitude: e.longitude!,
+      order: idx + 1
+    }));
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center">
-            <ShieldAlert className="w-8 h-8 mr-3 text-red-600" />
-            Emergency History
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
+            <span className="p-2 bg-red-100 text-red-700 rounded-xl animate-pulse">🚨</span>
+            Emergency SOS Control Center
           </h1>
-          <p className="text-slate-600 mt-1 font-medium">Comprehensive log of all emergency alerts and resolutions.</p>
+          <p className="text-slate-600 mt-1 font-medium">Real-time emergency monitoring, staff dispatch, and incident management.</p>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={() => setShowFilters(!showFilters)}
-          className={`font-semibold shadow-sm rounded-xl h-10 px-4 transition-colors ${showFilters || activeFiltersCount > 0 ? 'bg-red-50 text-red-700 border-red-200' : 'bg-white text-slate-700 border-[#D6ECFA]'}`}
-        >
-          <Filter className="w-4 h-4 mr-2" />
-          {showFilters ? 'Hide Filters' : 'Advanced Filters'}
-          {activeFiltersCount > 0 && (
-            <span className="ml-2 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">
-              {activeFiltersCount}
-            </span>
-          )}
-        </Button>
       </div>
 
-      {showFilters && (
-        <Card className="border border-red-100 shadow-sm shadow-red-50/50 bg-white rounded-2xl animate-in slide-in-from-top-2 duration-300">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-slate-800 text-sm tracking-tight uppercase">Filter Logs</h3>
-              {activeFiltersCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={resetFilters} className="text-xs text-slate-600 hover:text-red-600 h-8">
-                  <X className="w-3 h-3 mr-1" /> Clear All Filters
-                </Button>
-              )}
+      {/* Control Center Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <Card className="border-red-200 bg-gradient-to-br from-white to-red-50/40 shadow-sm rounded-2xl">
+          <CardContent className="p-6 flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Emergencies</p>
+              <h3 className="text-3xl font-extrabold text-red-600">{activeCount}</h3>
+              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                <Siren className="w-3.5 h-3.5 animate-spin" /> High Priority Alert
+              </p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600">Date</label>
-                <Input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)} className="h-10 rounded-lg text-sm bg-sky-50 border-[#D6ECFA]" />
-              </div>
-              
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600">Status</label>
-                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as Emergency['status'])} className="flex h-10 w-full rounded-lg border border-[#D6ECFA] bg-sky-50 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all">
-                  <option value="">All Statuses</option>
-                  <option value="active">Active</option>
-                  <option value="resolved">Resolved</option>
-                </select>
-              </div>
+            <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center font-bold">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+          </CardContent>
+        </Card>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600">Reporter</label>
-                <select value={filterReporter} onChange={e => setFilterReporter(e.target.value as any)} className="flex h-10 w-full rounded-lg border border-[#D6ECFA] bg-sky-50 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all">
-                  <option value="all">All Reporters</option>
-                  <option value="driver">Drivers</option>
-                  <option value="student">Students</option>
-                </select>
-              </div>
-              
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600">Route</label>
-                <select value={filterRoute} onChange={e => setFilterRoute(e.target.value)} className="flex h-10 w-full rounded-lg border border-[#D6ECFA] bg-sky-50 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all">
-                  <option value="">All Routes</option>
-                  {routes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                </select>
-              </div>
+        <Card className="border-[#D6ECFA] bg-gradient-to-br from-white to-emerald-50/40 shadow-sm rounded-2xl">
+          <CardContent className="p-6 flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Resolved Incidents</p>
+              <h3 className="text-3xl font-extrabold text-emerald-600">{resolvedCount}</h3>
+              <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Action Completed
+              </p>
             </div>
+            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-[#D6ECFA] bg-gradient-to-br from-white to-sky-50/40 shadow-sm rounded-2xl">
+          <CardContent className="p-6 flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Today's Emergencies</p>
+              <h3 className="text-3xl font-extrabold text-slate-900">{todayCount}</h3>
+              <p className="text-xs text-sky-600 font-medium flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" /> Reported Today
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
+              <Activity className="w-6 h-6" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-[#D6ECFA] bg-gradient-to-br from-white to-indigo-50/40 shadow-sm rounded-2xl">
+          <CardContent className="p-6 flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Response Time</p>
+              <h3 className="text-3xl font-extrabold text-indigo-600">{avgResponseTime}</h3>
+              <p className="text-xs text-indigo-600 font-medium flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" /> Fast Dispatch
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+              <Clock className="w-6 h-6" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Interactive Map View */}
+      {activeEmergencyStops.length > 0 && (
+        <Card className="border border-red-200 shadow-md bg-white rounded-2xl overflow-hidden">
+          <CardHeader className="bg-red-50/60 border-b border-red-100 p-4">
+            <CardTitle className="text-base font-bold text-red-800 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-red-600" /> Active Emergency Locations Map
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 h-[320px]">
+            <RouteMap 
+              stops={activeEmergencyStops}
+              interactive={false}
+            />
           </CardContent>
         </Card>
       )}
 
-      <Card className="border border-[#D6ECFA] border-t-4 border-t-red-500 shadow-sm bg-white rounded-2xl overflow-hidden">
-        <CardHeader className="pb-4 px-6 pt-6 border-b border-[#D6ECFA]">
-          <div className="flex items-center space-x-2">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-600 w-4 h-4" />
+      {/* Main Roster & Filters */}
+      <Card className="border border-[#D6ECFA] shadow-sm bg-white rounded-2xl overflow-hidden">
+        <CardHeader className="border-b border-[#D6ECFA] bg-sky-50/40 p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <CardTitle className="text-lg font-bold text-slate-800">Emergency Incident Roster</CardTitle>
+            <CardDescription className="text-sm">Filter, monitor, assign staff, and update incident statuses.</CardDescription>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <div className="relative flex-1 md:w-56">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
               <Input 
-                placeholder="Search by ID or Driver Name..." 
-                className="pl-10 h-10 bg-sky-50/50 border-[#D6ECFA] rounded-xl text-sm focus-visible:ring-red-500/20 focus-visible:bg-white transition-all"
+                placeholder="Search ID, Name, Reg No..." 
+                className="pl-9 h-10 border-[#D6ECFA] bg-white text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
+            <Select value={typeFilter} onValueChange={(val) => setTypeFilter(val || 'all')}>
+              <SelectTrigger className="w-36 h-10 border-[#D6ECFA] bg-white text-sm">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="Medical Emergency">Medical Emergency</SelectItem>
+                <SelectItem value="Accident">Accident</SelectItem>
+                <SelectItem value="Vehicle Breakdown">Vehicle Breakdown</SelectItem>
+                <SelectItem value="Harassment">Harassment</SelectItem>
+                <SelectItem value="Student Safety">Student Safety</SelectItem>
+                <SelectItem value="Fire">Fire</SelectItem>
+                <SelectItem value="Traffic Delay">Traffic Delay</SelectItem>
+                <SelectItem value="Road Block">Road Block</SelectItem>
+                <SelectItem value="Lost Student">Lost Student</SelectItem>
+                <SelectItem value="Suspicious Activity">Suspicious Activity</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val || 'all')}>
+              <SelectTrigger className="w-32 h-10 border-[#D6ECFA] bg-white text-sm">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Acknowledged">Acknowledged</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Resolved">Resolved</SelectItem>
+                <SelectItem value="Closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
+
         <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-sky-50/80">
-              <TableRow className="border-b border-[#D6ECFA] hover:bg-transparent">
-                <TableHead className="font-semibold text-slate-600 h-11 px-6">ID & Date</TableHead>
-                <TableHead className="font-semibold text-slate-600 h-11">Reporter</TableHead>
-                <TableHead className="font-semibold text-slate-600 h-11">Type & Location</TableHead>
-                <TableHead className="font-semibold text-slate-600 h-11">Status</TableHead>
-                <TableHead className="font-semibold text-slate-600 h-11 text-right px-6">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredEmergencies.map((record) => {
-                const isStudent = record.reportedBy === 'student';
-                const driver = drivers.find(d => d.id === record.driverId);
-                const student = students.find(s => s.id === record.studentId);
-                const reporterName = isStudent ? student?.name : driver?.name;
-                const reporterId = isStudent ? student?.registerNumber : driver?.employeeId;
-                const roleColor = isStudent ? 'text-indigo-600 bg-indigo-50' : 'text-slate-600 bg-white';
-                
-                const bus = buses.find(b => b.id === record.busId);
-                const route = routes.find(r => r.id === record.routeId);
-                
-                return (
-                  <TableRow key={record.id} className="hover:bg-sky-50/80 transition-colors border-b border-[#D6ECFA]">
-                    <TableCell className="px-6 py-4">
-                      <div className="font-bold text-slate-900 tracking-tight text-sm uppercase">{record.id}</div>
-                      <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium mt-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {new Date(record.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center border border-[#D6ECFA] ${roleColor}`}>
-                          <UserCircle className="w-4 h-4" />
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-600 font-semibold uppercase text-[11px] tracking-wider border-b border-slate-200">
+                <tr>
+                  <th className="py-3.5 px-4">Emergency ID</th>
+                  <th className="py-3.5 px-4">Reported By</th>
+                  <th className="py-3.5 px-4">Role & ID</th>
+                  <th className="py-3.5 px-4">Bus & Route</th>
+                  <th className="py-3.5 px-4">Location</th>
+                  <th className="py-3.5 px-4">Type</th>
+                  <th className="py-3.5 px-4">Priority</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4">Reported Time</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {filteredEmergencies.map((emg) => {
+                  const isStudent = emg.reportedBy === 'student';
+                  const reporterName = emg.reporterName || (isStudent ? students.find(s => s.id === emg.reporterId)?.name : drivers.find(d => d.id === emg.reporterId)?.name) || 'Unknown';
+                  const regOrEmp = emg.registerNumber || emg.employeeId || 'N/A';
+                  const busObj = buses.find(b => b.id === emg.busId);
+                  const routeObj = routes.find(r => r.id === emg.routeId);
+
+                  return (
+                    <tr key={emg.id} className="hover:bg-sky-50/30 transition-colors">
+                      <td className="py-4 px-4 font-mono font-bold text-red-600">{emg.id}</td>
+                      <td className="py-4 px-4 font-bold text-slate-900">{reporterName}</td>
+                      <td className="py-4 px-4">
+                        <div className="flex flex-col">
+                          <Badge variant="outline" className={`w-fit text-[10px] uppercase font-bold ${isStudent ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-purple-50 text-purple-700 border-purple-200'}`}>
+                            {emg.reportedBy}
+                          </Badge>
+                          <span className="text-xs font-mono text-slate-500 mt-0.5">{regOrEmp}</span>
                         </div>
-                        <div>
-                          <div className="font-bold text-slate-900 text-sm tracking-tight flex items-center gap-1.5">
-                            {reporterName || 'Unknown'} 
-                            <span className="text-[10px] uppercase font-bold tracking-wider opacity-70">({isStudent ? 'Student' : 'Driver'})</span>
-                          </div>
-                          <div className="text-xs text-slate-600 mt-0.5">{reporterId}</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-slate-800">{emg.busNumber || busObj?.busNumber || 'Bus'}</span>
+                          <span className="text-xs text-slate-500">{emg.routeName || routeObj?.name || 'Route'}</span>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm font-semibold text-slate-700">{isStudent ? record.emergencyType : `Bus ${bus?.busNumber}`}</div>
-                      <div className="text-xs text-slate-600 font-medium mt-0.5 truncate max-w-[200px]">{route?.name} • {record.pickupPoint}</div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={record.status === 'active' ? 'destructive' : 'default'} 
-                        className={
-                          record.status === 'active' ? 'bg-red-600 text-white hover:bg-red-700 shadow-none font-bold px-2.5 py-0.5 capitalize animate-pulse' : 
-                          'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/60 shadow-none font-semibold px-2.5 py-0.5 capitalize'
-                        }>
-                        {record.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right px-6">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedEmergency(record)} className="font-semibold text-sky-600 hover:text-sky-600 hover:bg-sky-50">
-                        View Details <ArrowRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {filteredEmergencies.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-16">
-                    <div className="flex flex-col items-center justify-center text-slate-600">
-                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-                        <ShieldCheck className="w-8 h-8 text-slate-700" />
-                      </div>
-                      <p className="font-bold text-slate-700 text-lg">No emergencies found</p>
-                      <p className="text-sm mt-1">Your fleet history is clear based on these filters.</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                      </td>
+                      <td className="py-4 px-4 text-xs font-semibold text-slate-700">{emg.pickupPoint}</td>
+                      <td className="py-4 px-4 font-bold text-slate-800 text-xs">{emg.emergencyType}</td>
+                      <td className="py-4 px-4">
+                        <Badge className={`text-[10px] uppercase px-2 py-0.5 font-bold ${
+                          emg.priority === 'critical' ? 'bg-red-600 text-white' :
+                          emg.priority === 'high' ? 'bg-orange-500 text-white' :
+                          emg.priority === 'medium' ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-700'
+                        }`}>
+                          {emg.priority || 'high'}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4">
+                        <Badge className={`text-[10px] uppercase px-2.5 py-1 font-bold ${
+                          emg.status === 'Active' || emg.status === 'active' ? 'bg-red-100 text-red-800 border-red-200' :
+                          emg.status === 'Acknowledged' ? 'bg-amber-100 text-amber-800 border-amber-200' :
+                          emg.status === 'In Progress' ? 'bg-sky-100 text-sky-800 border-sky-200' :
+                          'bg-emerald-100 text-emerald-800 border-emerald-200'
+                        }`}>
+                          {emg.status}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4 text-xs text-slate-500" suppressHydrationWarning>
+                        {new Date(emg.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="py-4 px-4 text-right flex items-center justify-end gap-1.5 pt-5">
+                        <Button 
+                          onClick={() => openManageModal(emg)}
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold h-8 px-3 rounded-lg text-xs"
+                        >
+                          Manage
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => deleteEmergencyRecord(emg.id)}
+                          className="h-8 w-8 text-slate-400 hover:text-red-600"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredEmergencies.length === 0 && (
+                  <tr>
+                    <td colSpan={10} className="py-8 text-center text-slate-500 font-medium">
+                      No emergency records found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Emergency Details Dialog */}
-      <Dialog open={!!selectedEmergency} onOpenChange={(open) => !open && setSelectedEmergency(null)}>
-        {selectedEmergency && (() => {
-          const isStudent = selectedEmergency.reportedBy === 'student';
-          const driver = drivers.find(d => d.id === selectedEmergency.driverId);
-          const student = students.find(s => s.id === selectedEmergency.studentId);
-          const reporterName = isStudent ? student?.name : driver?.name;
-          const reporterContact = isStudent ? student?.phone : driver?.phone;
-          const reporterSecondary = isStudent ? `${student?.department}, Year ${student?.year}` : `License: ${driver?.licenseNumber}`;
+      {/* MANAGE EMERGENCY MODAL */}
+      <Dialog open={isManageModalOpen} onOpenChange={setIsManageModalOpen}>
+        <DialogContent className="sm:max-w-lg border-red-200 shadow-2xl p-0 overflow-hidden rounded-2xl">
+          <div className="bg-red-600 h-2.5" />
+          <div className="p-6 space-y-5">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <Siren className="w-5 h-5 text-red-600 animate-pulse" />
+                Manage Incident: {selectedEmergency?.id}
+              </DialogTitle>
+              <DialogDescription className="text-slate-600 text-xs">
+                Assign emergency response staff, update progress status, and enter resolution remarks.
+              </DialogDescription>
+            </DialogHeader>
 
-          const bus = buses.find(b => b.id === selectedEmergency.busId);
-          const route = routes.find(r => r.id === selectedEmergency.routeId);
-          const isResolved = selectedEmergency.status === 'resolved';
-
-          return (
-            <DialogContent className="sm:max-w-2xl border-[#D6ECFA] shadow-xl overflow-hidden p-0">
-              <div className={`h-2 ${isResolved ? 'bg-emerald-500' : 'bg-red-500'}`} />
-              <div className="p-6 max-h-[85vh] overflow-y-auto">
-                <DialogHeader>
-                  <div className="flex justify-between items-start mb-2">
-                    <DialogTitle className="flex flex-col text-xl font-bold text-slate-900">
-                      <div className="flex items-center">
-                        {isResolved ? <ShieldCheck className="w-6 h-6 mr-2 text-emerald-500" /> : <ShieldAlert className="w-6 h-6 mr-2 text-red-500" />}
-                        {isStudent ? 'Student Emergency Report' : 'Driver Emergency Report'}
-                      </div>
-                      {isStudent && (
-                        <span className="text-lg text-red-600 mt-2 font-bold">{selectedEmergency.emergencyType}</span>
-                      )}
-                    </DialogTitle>
-                    <Badge variant={isResolved ? 'default' : 'destructive'} 
-                      className={isResolved ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60 font-bold capitalize' : 'bg-red-600 font-bold capitalize'}>
-                      {selectedEmergency.status}
+            {selectedEmergency && (
+              <div className="space-y-4">
+                {/* Summary Info */}
+                <div className="bg-red-50/60 border border-red-200 p-4 rounded-xl space-y-2">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-bold text-slate-900">{selectedEmergency.reporterName || 'Reporter'}</h4>
+                      <p className="text-xs text-slate-600">{selectedEmergency.emergencyType} • {selectedEmergency.pickupPoint}</p>
+                    </div>
+                    <Badge className="bg-red-600 text-white text-[10px] uppercase font-bold">
+                      {selectedEmergency.priority || 'CRITICAL'}
                     </Badge>
                   </div>
-                  <DialogDescription className="text-sm font-medium text-slate-600">
-                    Report ID: {selectedEmergency.id} • Triggered {new Date(selectedEmergency.date).toLocaleString()}
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                  {/* Personnel Info */}
-                  <div className="bg-sky-50 rounded-xl p-5 border border-[#D6ECFA]">
-                    <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center">
-                      <UserCircle className="w-4 h-4 mr-1.5" /> Personnel Information ({isStudent ? 'Student' : 'Driver'})
-                    </h4>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs font-medium text-slate-600">Name</p>
-                        <p className="font-bold text-slate-900">{reporterName}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-600">Details</p>
-                        <p className="font-bold text-slate-900">{reporterSecondary}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-600">Contact Number</p>
-                        <p className="font-bold text-slate-900 flex items-center">
-                          {reporterContact}
-                          <a href={`tel:${reporterContact}`} className="ml-2 text-sky-600 hover:text-blue-800"><PhoneCall className="w-3.5 h-3.5" /></a>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Vehicle & Location Info */}
-                  <div className="bg-sky-50 rounded-xl p-5 border border-[#D6ECFA]">
-                    <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center">
-                      <Bus className="w-4 h-4 mr-1.5" /> Vehicle & Location
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="flex gap-4">
-                        <div className="flex-1">
-                          <p className="text-xs font-medium text-slate-600">Bus</p>
-                          <p className="font-bold text-slate-900">{bus?.busNumber}</p>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-xs font-medium text-slate-600">Route</p>
-                          <p className="font-bold text-slate-900">{route?.name}</p>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-600 flex items-center">
-                          <MapPin className="w-3 h-3 mr-1" /> Last Known Location
-                        </p>
-                        <p className="font-bold text-slate-900">{selectedEmergency.pickupPoint}</p>
-                      </div>
-                    </div>
-                  </div>
+                  <p className="text-xs text-slate-700 bg-white p-2.5 rounded-lg border border-red-100 italic">
+                    "{selectedEmergency.description || 'No description provided.'}"
+                  </p>
                 </div>
 
-                {isStudent && selectedEmergency.description && (
-                  <div className="mt-6 bg-red-50/50 rounded-xl p-5 border border-red-100">
-                    <h4 className="text-xs font-bold text-red-600 uppercase tracking-wider mb-2">Student Description</h4>
-                    <p className="text-sm font-medium text-slate-700">"{selectedEmergency.description}"</p>
-                  </div>
-                )}
+                {/* Status Selector */}
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold text-slate-700 uppercase">Update Status</Label>
+                  <Select value={newStatus} onValueChange={(val: any) => setNewStatus(val)}>
+                    <SelectTrigger className="h-10 border-[#D6ECFA]">
+                      <SelectValue placeholder="Select Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active (Alert Dispatched)</SelectItem>
+                      <SelectItem value="Acknowledged">Acknowledged by Control Room</SelectItem>
+                      <SelectItem value="In Progress">In Progress (Staff En Route)</SelectItem>
+                      <SelectItem value="Resolved">Resolved (Incident Handled)</SelectItem>
+                      <SelectItem value="Closed">Closed (Case Closed)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                {/* Resolution Info */}
-                {isResolved && (
-                  <div className="mt-6 bg-emerald-50/50 rounded-xl p-5 border border-emerald-100">
-                    <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center">
-                      <Activity className="w-4 h-4 mr-1.5" /> Resolution Report
-                    </h4>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs font-medium text-slate-600">Action Taken</p>
-                        <p className="font-semibold text-slate-800">{selectedEmergency.actionTaken || 'No action recorded.'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-600">Administrator Remarks</p>
-                        <p className="text-sm font-medium text-slate-700 bg-white p-3 rounded-lg border border-emerald-100/50 mt-1 shadow-sm">
-                          "{selectedEmergency.remarks || 'No remarks provided.'}"
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {!isResolved && (
-                  <div className="mt-6 flex items-center justify-center p-4 bg-red-50 rounded-xl border border-red-100">
-                    <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
-                    <span className="font-semibold text-red-700 text-sm">This emergency requires immediate administrative action.</span>
-                  </div>
-                )}
+                {/* Assign Staff */}
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold text-slate-700 uppercase">Assign Emergency Staff</Label>
+                  <Input 
+                    placeholder="e.g. Dr. Ramesh (Campus Clinic) / Officer Senthil"
+                    value={assignedStaff}
+                    onChange={(e) => setAssignedStaff(e.target.value)}
+                    className="h-10 border-[#D6ECFA] text-sm"
+                  />
+                </div>
+
+                {/* Remarks */}
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold text-slate-700 uppercase">Action Remarks / Resolution Details</Label>
+                  <Input 
+                    placeholder="Enter dispatch notes or resolution details..."
+                    value={actionRemarks}
+                    onChange={(e) => setActionRemarks(e.target.value)}
+                    className="h-10 border-[#D6ECFA] text-sm"
+                  />
+                </div>
+
+                <DialogFooter className="gap-2 pt-2">
+                  <Button variant="ghost" onClick={() => setIsManageModalOpen(false)} className="rounded-lg">
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleSaveEmergencyUpdate} 
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 rounded-lg h-10 shadow-md"
+                  >
+                    Save & Update Status
+                  </Button>
+                </DialogFooter>
               </div>
-            </DialogContent>
-          );
-        })()}
+            )}
+          </div>
+        </DialogContent>
       </Dialog>
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bus, UserCircle, MapPin, Percent, Bell, AlertTriangle } from 'lucide-react';
 import { useDataStore } from '@/lib/store';
@@ -179,8 +180,8 @@ export default function StudentDashboard() {
 
       {/* Floating SOS Button */}
       <div className="fixed bottom-6 right-6 z-50 animate-in zoom-in duration-500 delay-300">
-        <button 
-          onClick={() => setIsSosOpen(true)}
+        <Link 
+          href="/student/emergency"
           className="bg-red-600 hover:bg-red-700 text-white rounded-full p-4 md:px-6 md:py-4 flex items-center shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all hover:scale-105 active:scale-95 group"
         >
           <div className="relative">
@@ -188,7 +189,7 @@ export default function StudentDashboard() {
             <div className="absolute inset-0 rounded-full ring-4 ring-red-500 opacity-50 animate-ping group-hover:animate-none"></div>
           </div>
           <span className="hidden md:inline font-bold tracking-wide">Emergency SOS</span>
-        </button>
+        </Link>
       </div>
 
       {/* SOS Confirmation Dialog */}

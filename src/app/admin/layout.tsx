@@ -1,5 +1,6 @@
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 
 export default function AdminLayout({
   children,
@@ -7,14 +8,15 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-[#EEF8FF] text-slate-900 font-sans p-4 gap-4 overflow-hidden selection:bg-sky-500/30 selection:text-sky-900">
-      <Sidebar role="admin" className="hidden md:flex rounded-2xl bg-[#F8FCFF] border border-[#D6ECFA] shadow-lg shrink-0 z-10" />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden rounded-2xl bg-white border border-[#D6ECFA] shadow-lg relative z-0">
+    <div className="flex h-screen bg-[#EAF4FF] text-[#1E293B] font-sans p-3 gap-3 overflow-hidden selection:bg-[#005BAC]/10 selection:text-[#005BAC]">
+      <Sidebar role="admin" className="hidden md:flex rounded-2xl shrink-0" />
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden rounded-2xl bg-white border border-[#D6EAF8] shadow-sm relative">
         <Header role="admin" />
-        <main className="flex-1 overflow-auto bg-[#EEF8FF]">
-          <div className="max-w-7xl mx-auto p-6 w-full h-full">
+        <main className="flex-1 overflow-auto bg-[#EAF4FF]/40 flex flex-col justify-between">
+          <div className="max-w-7xl mx-auto p-4 md:p-6 w-full">
             {children}
           </div>
+          <Footer />
         </main>
       </div>
     </div>
