@@ -158,6 +158,21 @@ const seedAll = async () => {
     })));
     console.log(`✅ Seeded ${createdDrivers.length} Drivers.`);
 
+    for (const d of createdDrivers) {
+      let u = await User.findOne({ email: d.email });
+      if (!u) {
+        await User.create({
+          name: d.name,
+          email: d.email,
+          password: 'Driver@123',
+          role: 'driver',
+          phone: d.phone,
+          status: 'active'
+        });
+      }
+    }
+    console.log(`✅ Ensured User login accounts exist for all ${createdDrivers.length} Drivers.`);
+
     // 5. Create 10 Buses (BUS-A to BUS-J, 52 seats capacity)
     const createdBuses = await Bus.insertMany(busLabels.map((label, i) => ({
       busNumber: label,

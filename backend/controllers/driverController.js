@@ -220,3 +220,149 @@ exports.deleteDriver = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get logged in driver's complete profile
+// @route   GET /api/drivers/profile
+// @access  Private (Driver only - strictly authenticated record)
+exports.getDriverProfile = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Not authorized, authenticated user missing' });
+    }
+
+    // Read the logged-in driver's ID and credentials safely from the JWT authenticated object
+    const query = [];
+    if (req.user._id && req.user._id.toString().match(/^[0-9a-fA-F]{24}$/)) {
+      query.push({ _id: req.user._id });
+    }
+    if (req.user.email) {
+      query.push({ email: { $regex: new RegExp('^' + req.user.email + '$', 'i') } });
+    }
+    if (req.user.employeeId) {
+      query.push({ employeeId: { $regex: new RegExp('^' + req.user.employeeId + '$', 'i') } });
+    }
+    if (req.user.name) {
+      query.push({ name: { $regex: new RegExp('^' + req.user.name + '$', 'i') } });
+    }
+
+    // Strictly find ONLY the authenticated driver's record in MongoDB
+    const driver = await Driver.findOne({ $or: query })
+      .populate('assignedBus')
+      .populate('assignedRoute');
+
+    if (!driver) {
+      return res.status(404).json({ success: false, message: 'Driver profile record not found for this authenticated account' });
+    }
+
+    const profileData = {
+      id: driver._id,
+      name: driver.name || '',
+      employeeId: driver.employeeId || '',
+      email: driver.email || '',
+      phone: driver.phone || '',
+      address: driver.address || '',
+      profilePhoto: driver.profilePhoto || '',
+      licenseNumber: driver.licenseNumber || '',
+      licenseExpiry: driver.licenseExpiry || '',
+      experience: driver.experience ?? 0,
+      assignedBus: driver.assignedBus ? (driver.assignedBus.busNumber || driver.assignedBus.registrationNumber) : (driver.assignedBusId || 'Not assigned'),
+      assignedRoute: driver.assignedRoute ? (driver.assignedRoute.routeName || driver.assignedRoute.routeCode) : (driver.assignedRouteId || 'Not assigned'),
+      status: driver.status || 'active',
+      createdDate: driver.createdAt ? driver.createdAt.toISOString().split('T')[0] : 'N/A',
+      joinedDate: driver.createdAt ? driver.createdAt.toISOString().split('T')[0] : 'N/A'
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: profileData
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update editable fields of logged in driver's profile (phone, address, profilePhoto)
+// @route   PUT /api/drivers/profile
+// @access  Private (Driver only)
+exports.updateDriverProfile = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const { phone, address, profilePhoto } = req.body;
+
+    // Validation rules
+    if (phone !== undefined) {
+      const phoneRegex = /^[0-9+\-\s()]{7,15}$/;
+      if (!phone || !phone.trim() || !phoneRegex.test(phone.trim())) {
+        return res.status(400).json({ success: false, message: 'Please provide a valid phone number (7-15 digits).' });
+      }
+    }
+
+    if (address !== undefined) {
+      if (!address || !address.trim()) {
+        return res.status(400).json({ success: false, message: 'Address cannot be empty.' });
+      }
+    }
+
+    // Strictly locate ONLY this authenticated driver's record by JWT ID / email / name
+    const query = [];
+    if (req.user._id && req.user._id.toString().match(/^[0-9a-fA-F]{24}$/)) {
+      query.push({ _id: req.user._id });
+    }
+    if (req.user.email) {
+      query.push({ email: { $regex: new RegExp('^' + req.user.email + '$', 'i') } });
+    }
+    if (req.user.name) {
+      query.push({ name: { $regex: new RegExp('^' + req.user.name + '$', 'i') } });
+    }
+
+    const driver = await Driver.findOne({ $or: query });
+    if (!driver) {
+      return res.status(404).json({ success: false, message: 'Driver profile record not found for this account' });
+    }
+
+    // Modify ONLY authorized editable fields: phone, address, profilePhoto
+    // Do NOT allow editing: employeeId, email, assignedBus, assignedRoute, licenseNumber
+    if (phone !== undefined) driver.phone = phone.trim();
+    if (address !== undefined) driver.address = address.trim();
+    if (profilePhoto !== undefined) driver.profilePhoto = profilePhoto;
+
+    await driver.save();
+
+    // Keep auth User profile phone in sync
+    if (phone !== undefined) {
+      req.user.phone = phone.trim();
+      await req.user.save();
+    }
+
+    const updatedDriver = await Driver.findById(driver._id).populate('assignedBus').populate('assignedRoute');
+
+    const updatedData = {
+      id: updatedDriver._id,
+      name: updatedDriver.name || '',
+      employeeId: updatedDriver.employeeId || '',
+      email: updatedDriver.email || '',
+      phone: updatedDriver.phone || '',
+      address: updatedDriver.address || '',
+      profilePhoto: updatedDriver.profilePhoto || '',
+      licenseNumber: updatedDriver.licenseNumber || '',
+      licenseExpiry: updatedDriver.licenseExpiry || '',
+      experience: updatedDriver.experience ?? 0,
+      assignedBus: updatedDriver.assignedBus ? (updatedDriver.assignedBus.busNumber || updatedDriver.assignedBus.registrationNumber) : (updatedDriver.assignedBusId || 'Not assigned'),
+      assignedRoute: updatedDriver.assignedRoute ? (updatedDriver.assignedRoute.routeName || updatedDriver.assignedRoute.routeCode) : (updatedDriver.assignedRouteId || 'Not assigned'),
+      status: updatedDriver.status || 'active',
+      createdDate: updatedDriver.createdAt ? updatedDriver.createdAt.toISOString().split('T')[0] : 'N/A',
+      joinedDate: updatedDriver.createdAt ? updatedDriver.createdAt.toISOString().split('T')[0] : 'N/A'
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: 'Driver profile updated successfully',
+      data: updatedData
+    });
+  } catch (error) {
+    next(error);
+  }
+};

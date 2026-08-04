@@ -41,6 +41,10 @@ const driverSchema = new mongoose.Schema(
       type: String,
       default: 'Sathyamangalam, Tamil Nadu'
     },
+    profilePhoto: {
+      type: String,
+      default: ''
+    },
     assignedRoute: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Route',

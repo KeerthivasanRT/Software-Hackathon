@@ -60,6 +60,7 @@ export function Sidebar({ role, className }: SidebarProps) {
       { name: 'Salary', path: '/driver/salary', icon: IndianRupee },
       { name: 'Emergency SOS', path: '/driver/emergency', icon: ShieldAlert },
       { name: 'Notifications', path: '/driver/notifications', icon: Bell },
+      { name: 'My Profile', path: '/driver/profile', icon: UserCircle },
     ],
     student: [
       { name: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },

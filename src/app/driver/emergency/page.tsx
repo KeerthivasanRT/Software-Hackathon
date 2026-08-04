@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDataStore } from '@/lib/store';
+import { getApiUrl } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,54 +15,139 @@ import { ShieldAlert, Siren, CheckCircle2, Clock, MapPin, PhoneCall, Bus as BusI
 export default function DriverEmergencyPage() {
   const { user, drivers, buses, routes, emergencies, triggerEmergency } = useDataStore();
 
-  // Identify logged in driver or default to d1
-  const currentDriverId = user?.role === 'driver' ? user.id : 'd1';
-  const currentDriver = drivers.find(d => d.id === currentDriverId) || drivers[0];
-  const assignedBus = buses.find(b => b.id === currentDriver?.assignedBusId);
-  const assignedRoute = routes.find(r => r.id === currentDriver?.assignedRouteId);
+  // Read authenticated driver from existing authentication system (localStorage & store)
+  const authUserStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+  const authUser = authUserStr ? JSON.parse(authUserStr) : null;
+
+  // Find matching driver from store by ID, email, or name
+  const matchedDriver = drivers.find(d => 
+    d.id === (user?.id || authUser?.id) || 
+    (authUser?.email && d.email.toLowerCase() === authUser.email.toLowerCase()) ||
+    (user?.email && d.email.toLowerCase() === user.email.toLowerCase()) ||
+    (authUser?.name && d.name.toLowerCase() === authUser.name.toLowerCase())
+  );
+
+  const initialBus = buses.find(b => b.id === matchedDriver?.assignedBusId || b.driverId === matchedDriver?.id);
+  const initialRoute = routes.find(r => r.id === (matchedDriver?.assignedRouteId || initialBus?.routeId));
+
+  // Dynamic state for driver profile and assignment details
+  const [driverInfo, setDriverInfo] = useState({
+    name: authUser?.name || user?.name || matchedDriver?.name || 'Authenticated Driver',
+    employeeId: matchedDriver?.employeeId || authUser?.employeeId || 'DRV-ID',
+    busNumber: initialBus?.busNumber || 'Unassigned Bus',
+    busId: initialBus?.id || 'b2',
+    routeName: initialRoute?.name || 'Unassigned Route',
+    routeId: initialRoute?.id || 'r2',
+    reporterId: authUser?.id || user?.id || matchedDriver?.id || 'd2',
+    phone: authUser?.phone || matchedDriver?.phone || ''
+  });
 
   // Form State
   const [emergencyType, setEmergencyType] = useState<string>('Vehicle Breakdown');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('high');
-  const [pickupPoint, setPickupPoint] = useState<string>(assignedRoute?.stops[1]?.name || 'Current Stop Location');
-  const [emergencyContact, setEmergencyContact] = useState<string>(currentDriver?.phone || '+91 98765 43210');
+  const [pickupPoint, setPickupPoint] = useState<string>(initialRoute?.stops[1]?.name || 'Current Stop Location');
+  const [emergencyContact, setEmergencyContact] = useState<string>(driverInfo.phone);
   const [description, setDescription] = useState<string>('');
 
   const [submittedId, setSubmittedId] = useState<string | null>(null);
 
-  const handleSubmitEmergency = (e: React.FormEvent) => {
+  // Fetch verified driver details directly from backend JWT API if available
+  useEffect(() => {
+    const fetchDriverDetails = async () => {
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        const savedUserStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+        const savedUser = savedUserStr ? JSON.parse(savedUserStr) : null;
+
+        if (savedUser && savedUser.phone) {
+          setEmergencyContact(prev => prev || savedUser.phone);
+        }
+
+        if (!token) return;
+
+        const res = await fetch(getApiUrl('/api/drivers/me/dashboard'), {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && data.data) {
+          const dash = data.data;
+          setDriverInfo(prev => ({
+            ...prev,
+            name: dash.driverName || prev.name,
+            employeeId: dash.employeeId || prev.employeeId,
+            busNumber: dash.assignedBus || prev.busNumber,
+            routeName: dash.routeName || prev.routeName,
+          }));
+          if (dash.stops && dash.stops.length > 0) {
+            setPickupPoint(prev => (prev === 'Current Stop Location' || !prev) ? (dash.stops[1]?.name || dash.stops[0]?.name || dash.origin || 'Current Stop Location') : prev);
+          }
+        }
+      } catch (err) {
+        console.warn('Fallback to local authentication state for driver SOS:', err);
+      }
+    };
+    fetchDriverDetails();
+  }, []);
+
+  const handleSubmitEmergency = async (e: React.FormEvent) => {
     e.preventDefault();
     const newId = `EMG-${Math.floor(100 + Math.random() * 900)}`;
 
-    triggerEmergency({
+    const emergencyPayload = {
       id: newId,
-      reportedBy: 'driver',
-      reporterName: currentDriver?.name || 'Driver S. Kumar',
-      reporterId: currentDriver?.id || 'd1',
-      employeeId: currentDriver?.employeeId || 'DRV-001',
-      busId: assignedBus?.id || 'b1',
-      busNumber: assignedBus?.busNumber || 'BUS-001',
-      routeId: assignedRoute?.id || 'r1',
-      routeName: assignedRoute?.name || 'Route A',
+      reportedBy: 'driver' as const,
+      reporterName: driverInfo.name,
+      reporterId: driverInfo.reporterId,
+      employeeId: driverInfo.employeeId,
+      busId: driverInfo.busId,
+      busNumber: driverInfo.busNumber,
+      routeId: driverInfo.routeId,
+      routeName: driverInfo.routeName,
       pickupPoint: pickupPoint || 'Bus Route Location',
-      latitude: assignedRoute?.stops[1]?.latitude || 11.2333,
-      longitude: assignedRoute?.stops[1]?.longitude || 77.1000,
+      latitude: initialRoute?.stops[1]?.latitude || 11.2333,
+      longitude: initialRoute?.stops[1]?.longitude || 77.1000,
       emergencyType,
       priority,
-      description: description || `Driver reported ${emergencyType} at ${pickupPoint}.`,
+      description: description || `Driver ${driverInfo.name} (${driverInfo.employeeId}) reported ${emergencyType} at ${pickupPoint}.`,
       emergencyContact,
       date: new Date().toISOString(),
-      status: 'Active',
+      status: 'Active' as const,
       assignedStaff: 'Control Room Notified',
       remarks: 'Alert dispatched to Admin Control Center.'
-    });
+    };
+
+    triggerEmergency(emergencyPayload);
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (token) {
+        await fetch(getApiUrl('/api/emergency'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            emergencyType,
+            description: description || `Driver ${driverInfo.name} (${driverInfo.employeeId}) reported ${emergencyType} on bus ${driverInfo.busNumber}, route ${driverInfo.routeName}.`,
+            location: {
+              latitude: initialRoute?.stops[1]?.latitude || 11.2333,
+              longitude: initialRoute?.stops[1]?.longitude || 77.1000,
+              name: pickupPoint || 'Bus Route Location'
+            }
+          })
+        });
+      }
+    } catch (err) {
+      console.warn('Backend emergency sync fallback:', err);
+    }
 
     setSubmittedId(newId);
     setDescription('');
   };
 
   // Emergencies reported by this driver
-  const myEmergencies = emergencies.filter(e => e.reporterId === currentDriver?.id || e.reportedBy === 'driver');
+  const myEmergencies = emergencies.filter(e => e.reporterId === driverInfo.reporterId || e.employeeId === driverInfo.employeeId || e.reporterName === driverInfo.name || e.reportedBy === 'driver');
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -104,19 +190,19 @@ export default function DriverEmergencyPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs font-medium">
                 <div>
                   <span className="text-slate-400 font-bold uppercase text-[10px]">Driver Name</span>
-                  <p className="text-slate-900 font-bold text-sm">{currentDriver?.name}</p>
+                  <p className="text-slate-900 font-bold text-sm">{driverInfo.name}</p>
                 </div>
                 <div>
                   <span className="text-slate-400 font-bold uppercase text-[10px]">Employee ID</span>
-                  <p className="text-slate-900 font-mono font-bold text-sm">{currentDriver?.employeeId}</p>
+                  <p className="text-slate-900 font-mono font-bold text-sm">{driverInfo.employeeId}</p>
                 </div>
                 <div>
                   <span className="text-slate-400 font-bold uppercase text-[10px]">Assigned Bus</span>
-                  <p className="text-slate-900 font-bold text-sm">{assignedBus ? assignedBus.busNumber : 'BUS-001'}</p>
+                  <p className="text-slate-900 font-bold text-sm">{driverInfo.busNumber}</p>
                 </div>
                 <div>
                   <span className="text-slate-400 font-bold uppercase text-[10px]">Assigned Route</span>
-                  <p className="text-slate-900 font-bold text-sm">{assignedRoute ? assignedRoute.name : 'Route A'}</p>
+                  <p className="text-slate-900 font-bold text-sm">{driverInfo.routeName}</p>
                 </div>
               </div>
 

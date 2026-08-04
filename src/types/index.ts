@@ -7,6 +7,9 @@ export interface User {
   email: string;
   role: Role;
   avatar?: string;
+  phone?: string;
+  address?: string;
+  profilePhoto?: string;
 }
 
 export interface Bus {
@@ -33,6 +36,9 @@ export interface Driver extends User {
   status: 'active' | 'inactive';
   assignedBusId: string | null;
   assignedRouteId: string | null;
+  address?: string;
+  profilePhoto?: string;
+  salary?: number;
 }
 
 export interface Student extends User {

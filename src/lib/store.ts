@@ -181,19 +181,26 @@ export const useDataStore = create<DataState>((set, get) => ({
   },
   login: (role, userId, email) => {
     let user: User | null = null;
+    const authUserStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    const authUser = authUserStr ? JSON.parse(authUserStr) : null;
+
     if (role === 'admin') {
-      user = { id: 'u1', name: 'Admin User', email: email || 'admin@college.edu', role: 'admin' };
+      user = { id: userId || authUser?.id || 'u1', name: authUser?.name || 'Admin User', email: email || authUser?.email || 'admin@college.edu', role: 'admin' };
     } else if (role === 'driver') {
       const driverStore = useDataStore.getState().drivers;
-      const driver = driverStore.find(d => d.id === userId);
+      const driver = driverStore.find(d => d.id === userId || (email && d.email.toLowerCase() === email.toLowerCase()) || (authUser && authUser.email && d.email.toLowerCase() === authUser.email.toLowerCase()));
       if (driver) {
         user = { id: driver.id, name: driver.name, email: driver.email, role: 'driver' };
+      } else if (authUser && authUser.role === 'driver') {
+        user = { id: authUser.id || userId || 'd2', name: authUser.name || 'Driver', email: authUser.email || email || '', role: 'driver' };
       }
     } else if (role === 'student') {
       const studentStore = useDataStore.getState().students;
-      const student = studentStore.find(s => s.id === userId);
+      const student = studentStore.find(s => s.id === userId || (email && s.email.toLowerCase() === email.toLowerCase()) || (authUser && authUser.email && s.email.toLowerCase() === authUser.email.toLowerCase()));
       if (student) {
         user = { id: student.id, name: student.name, email: student.email, role: 'student' };
+      } else if (authUser && authUser.role === 'student') {
+        user = { id: authUser.id || userId || 'st1', name: authUser.name || 'Student', email: authUser.email || email || '', role: 'student' };
       }
     }
     set({ user });
