@@ -131,6 +131,10 @@ exports.getDrivers = async (req, res, next) => {
 // @access  Private
 exports.getDriverById = async (req, res, next) => {
   try {
+    if (req.params.id === 'me') {
+      return exports.getDriverMe(req, res, next);
+    }
+
     const driver = await Driver.findById(req.params.id)
       .populate('assignedRoute')
       .populate('assignedBus');
