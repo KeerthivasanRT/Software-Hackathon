@@ -38,7 +38,8 @@ import {
   PhoneCall,
   Heart,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Settings
 } from 'lucide-react';
 import { useDataStore } from '@/lib/store';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -195,15 +196,16 @@ export function Sidebar({ role, className }: SidebarProps) {
     ],
     student: [
       { name: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
-      { name: 'My Bus & Route', path: '/student/bus-route', icon: Bus },
-      { name: 'Live Tracking', path: '/student/tracking', icon: MapPin },
-      { name: 'Bus Search', path: '/student/search', icon: Search },
+      { name: 'My Bus & Route', path: '/student/route', icon: Bus },
       { name: 'My Attendance', path: '/student/attendance', icon: CalendarCheck },
       { name: 'Academic & Bus Calendar', path: '/student/calendar', icon: CalendarDays },
+      { name: 'Trip History', path: '/student/history', icon: BookOpen },
       { name: 'Fee Payments', path: '/student/fees', icon: CreditCard },
       { name: 'Emergency SOS', path: '/student/emergency', icon: ShieldAlert },
       { name: 'Complaint Desk', path: '/student/complaints', icon: MessageSquare },
       { name: 'Campus Notifications', path: '/student/notifications', icon: Bell },
+      { name: 'My Profile', path: '/student/profile', icon: UserCircle },
+      { name: 'Account Settings', path: '/student/settings', icon: Settings },
     ],
   };
 
