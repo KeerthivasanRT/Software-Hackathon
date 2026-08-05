@@ -7,6 +7,7 @@ const { authorize } = require('../middleware/roleMiddleware');
 router.use(protect);
 
 router.get('/me/dashboard', driverController.getMyDashboard);
+router.get('/me', driverController.getDriverMe);
 router.get('/profile', driverController.getDriverProfile);
 router.put('/profile', driverController.updateDriverProfile);
 router.get('/', driverController.getDrivers);

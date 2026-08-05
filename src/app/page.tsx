@@ -41,6 +41,9 @@ export default function LoginPage() {
       if (response.ok && data.success) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        if (data.driverId || data.user?.driverId) {
+          localStorage.setItem('driverId', data.driverId || data.user.driverId);
+        }
         
         login(data.user.role, data.user.id, data.user.email);
         router.push(`/${data.user.role}/dashboard`);

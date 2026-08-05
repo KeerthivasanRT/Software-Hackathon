@@ -221,6 +221,72 @@ exports.deleteDriver = async (req, res, next) => {
   }
 };
 
+// @desc    Get current authenticated driver details from MongoDB
+// @route   GET /api/drivers/me
+// @access  Private (Driver only)
+exports.getDriverMe = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Not authorized, authenticated user missing' });
+    }
+
+    // Identify currently logged in driver via JWT user object
+    const query = [];
+    if (req.user._id && req.user._id.toString().match(/^[0-9a-fA-F]{24}$/)) {
+      query.push({ _id: req.user._id });
+    }
+    if (req.user.driverId && req.user.driverId.toString().match(/^[0-9a-fA-F]{24}$/)) {
+      query.push({ _id: req.user.driverId });
+    }
+    if (req.user.email) {
+      query.push({ email: { $regex: new RegExp('^' + req.user.email + '$', 'i') } });
+    }
+    if (req.user.employeeId) {
+      query.push({ employeeId: { $regex: new RegExp('^' + req.user.employeeId + '$', 'i') } });
+    }
+    if (req.user.name) {
+      query.push({ name: { $regex: new RegExp('^' + req.user.name + '$', 'i') } });
+    }
+
+    const driver = await Driver.findOne({ $or: query })
+      .populate('assignedBus')
+      .populate('assignedRoute');
+
+    if (!driver) {
+      return res.status(404).json({ success: false, message: 'Driver profile record not found in MongoDB for this authenticated account' });
+    }
+
+    const assignedBusValue = driver.assignedBus 
+      ? (driver.assignedBus.busNumber || driver.assignedBus.registrationNumber) 
+      : (driver.assignedBusId ? driver.assignedBusId.toString() : 'Not Assigned');
+
+    const assignedRouteValue = driver.assignedRoute 
+      ? (driver.assignedRoute.routeName || driver.assignedRoute.routeCode) 
+      : (driver.assignedRouteId ? driver.assignedRouteId.toString() : 'Not Assigned');
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: driver._id,
+        name: driver.name || '',
+        employeeId: driver.employeeId || '',
+        email: driver.email || '',
+        phone: driver.phone || '',
+        address: driver.address || '',
+        experience: driver.experience ?? 0,
+        licenseNumber: driver.licenseNumber || '',
+        licenseExpiry: driver.licenseExpiry || '',
+        assignedBus: assignedBusValue,
+        assignedRoute: assignedRouteValue,
+        status: driver.status || 'active',
+        profilePhoto: driver.profilePhoto || ''
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get logged in driver's complete profile
 // @route   GET /api/drivers/profile
 // @access  Private (Driver only - strictly authenticated record)

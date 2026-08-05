@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const User = require('../models/User');
+const Driver = require('../models/Driver');
 const generateToken = require('../utils/generateToken');
 
 // @desc    Register a new user
@@ -84,19 +85,34 @@ exports.login = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Account is inactive. Please contact administrator.' });
     }
 
+    let driverId = null;
+    if (user.role === 'driver') {
+      const driver = await Driver.findOne({
+        $or: [
+          { email: { $regex: new RegExp('^' + user.email + '$', 'i') } },
+          { name: { $regex: new RegExp('^' + user.name + '$', 'i') } }
+        ]
+      });
+      if (driver) {
+        driverId = driver._id.toString();
+      }
+    }
+
     const token = generateToken(user._id, user.role);
 
     return res.status(200).json({
       success: true,
       message: 'Login successful',
       token,
+      driverId,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
         phone: user.phone,
-        status: user.status
+        status: user.status,
+        driverId
       }
     });
   } catch (error) {
