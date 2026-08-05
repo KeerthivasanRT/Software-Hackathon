@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
 
 dotenv.config();
 
@@ -341,7 +342,7 @@ const seedAll = async () => {
 
     console.log('🧹 Clearing existing collections for a clean seed...');
     await Promise.all([
-      User.deleteMany({ email: { $nin: ['admin@admin.com', 'arun@student.com'] } }),
+      User.deleteMany({ email: { $nin: ['admin@admin.com', 'murugan@driver.com', 'arun@student.com'] } }),
       Student.deleteMany({}),
       Driver.deleteMany({}),
       Bus.deleteMany({}),
@@ -412,17 +413,27 @@ const seedAll = async () => {
     console.log(`✅ Seeded ${createdDrivers.length} Drivers with Complete Profiles.`);
 
     for (const d of createdDrivers) {
-      await User.deleteMany({ email: d.email });
-      await User.create({
-        name: d.name,
-        email: d.email,
-        password: 'Driver@123',
-        role: 'driver',
-        phone: d.phone,
-        status: 'active'
-      });
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('password123', salt);
+      const existingUser = await User.findOne({ email: d.email });
+
+      if (existingUser) {
+        await User.updateOne(
+          { _id: existingUser._id },
+          { $set: { name: d.name, phone: d.phone, role: 'driver', status: 'active', password: hashedPassword } }
+        );
+      } else {
+        await User.create({
+          name: d.name,
+          email: d.email,
+          password: 'password123',
+          role: 'driver',
+          phone: d.phone,
+          status: 'active'
+        });
+      }
     }
-    console.log(`✅ Ensured synchronized User login accounts exist for all ${createdDrivers.length} Drivers.`);
+    console.log(`✅ Ensured synchronized User login accounts and updated password hashes for all ${createdDrivers.length} Drivers.`);
 
     // 5. Create 10 Buses (BUS-A to BUS-J, 52 seats capacity)
     const createdBuses = await Bus.insertMany(busLabels.map((label, i) => ({
@@ -701,6 +712,10 @@ const seedAll = async () => {
 
     console.log('=======================================================');
     console.log(' 🎉 FAST BULK BIT MONGODB ATLAS SEED COMPLETED!');
+    console.log('=======================================================');
+    console.log('Driver:');
+    console.log('Email: murugan@driver.com');
+    console.log('Password: password123');
     console.log('=======================================================');
   } catch (error) {
     console.error('❌ Seeding Failed:', error);
