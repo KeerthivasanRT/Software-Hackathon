@@ -47,10 +47,270 @@ const departments = [
   'CSE', 'IT', 'ECE', 'EEE', 'MECH', 'AIDS', 'AI&DS', 'CYBER SECURITY'
 ];
 
-const driverNames = [
-  'Murugan', 'Suresh', 'Ravi', 'Selvam', 'Kumar',
-  'Mohan', 'Rajendran', 'Manikandan', 'Sivakumar', 'Velmurugan'
+const driverProfilesData = [
+  {
+    name: 'R. Murugan',
+    email: 'murugan@driver.com',
+    phone: '9843101234',
+    alternatePhone: '9443219876',
+    gender: 'Male',
+    dateOfBirth: '1984-05-14',
+    bloodGroup: 'O+',
+    address: '45, Bharathi Street, Sathyamangalam Road',
+    city: 'Sathyamangalam',
+    state: 'Tamil Nadu',
+    pincode: '638401',
+    emergencyContactName: 'M. Lakshmi (Wife)',
+    emergencyContactNumber: '9843105566',
+    licenseNumber: 'TN-38-2015-004512',
+    licenseExpiry: '2030-05-14',
+    experience: 12,
+    joiningDate: '2016-06-01',
+    status: 'active',
+    shift: 'Morning Shift (06:00 AM - 02:00 PM)',
+    salary: 32000,
+    department: 'Transport & Fleet Logistics',
+    aadhaarNumber: 'XXXX XXXX 3842',
+    drivingBadgeNumber: 'TN38-BDG-2016-842',
+    profilePhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Akash',
+    email: 'akash@driver.com',
+    phone: '9876543201',
+    alternatePhone: '9443187654',
+    gender: 'Male',
+    dateOfBirth: '1992-08-22',
+    bloodGroup: 'B+',
+    address: '12-A, Gandhipuram Main Road',
+    city: 'Coimbatore',
+    state: 'Tamil Nadu',
+    pincode: '641012',
+    emergencyContactName: 'A. Priya (Wife)',
+    emergencyContactNumber: '9876549900',
+    licenseNumber: 'TN-38-2018-009812',
+    licenseExpiry: '2032-08-20',
+    experience: 7,
+    joiningDate: '2019-03-15',
+    status: 'active',
+    shift: 'General Shift (07:30 AM - 05:00 PM)',
+    salary: 29500,
+    department: 'Transport & Fleet Logistics',
+    aadhaarNumber: 'XXXX XXXX 7914',
+    drivingBadgeNumber: 'TN38-BDG-2019-219',
+    profilePhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Suresh',
+    email: 'suresh@driver.com',
+    phone: '9876543202',
+    alternatePhone: '9442154321',
+    gender: 'Male',
+    dateOfBirth: '1987-11-03',
+    bloodGroup: 'A+',
+    address: '88, Periyar Nagar, Erode Town',
+    city: 'Erode',
+    state: 'Tamil Nadu',
+    pincode: '638001',
+    emergencyContactName: 'S. Karpagam (Wife)',
+    emergencyContactNumber: '9876511223',
+    licenseNumber: 'TN-33-2014-001298',
+    licenseExpiry: '2029-11-02',
+    experience: 10,
+    joiningDate: '2017-01-10',
+    status: 'active',
+    shift: 'Morning Shift (06:00 AM - 02:00 PM)',
+    salary: 31000,
+    department: 'Transport & Fleet Logistics',
+    aadhaarNumber: 'XXXX XXXX 4158',
+    drivingBadgeNumber: 'TN33-BDG-2017-910',
+    profilePhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Ravi',
+    email: 'ravi@driver.com',
+    phone: '9876543203',
+    alternatePhone: '9443556677',
+    gender: 'Male',
+    dateOfBirth: '1989-03-19',
+    bloodGroup: 'AB+',
+    address: '23, Mettupalayam Highway',
+    city: 'Annur',
+    state: 'Tamil Nadu',
+    pincode: '641653',
+    emergencyContactName: 'R. Gowry (Sister)',
+    emergencyContactNumber: '9876588776',
+    licenseNumber: 'TN-38-2016-003445',
+    licenseExpiry: '2031-04-10',
+    experience: 9,
+    joiningDate: '2018-07-01',
+    status: 'active',
+    shift: 'Morning Shift (06:00 AM - 02:00 PM)',
+    salary: 30500,
+    department: 'Transport & Fleet Logistics',
+    aadhaarNumber: 'XXXX XXXX 6289',
+    drivingBadgeNumber: 'TN38-BDG-2018-443',
+    profilePhoto: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=300&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Selvam',
+    email: 'selvam@driver.com',
+    phone: '9876543204',
+    alternatePhone: '9443890123',
+    gender: 'Male',
+    dateOfBirth: '1982-12-12',
+    bloodGroup: 'O-',
+    address: '15, Cauvery Road, Bhavani Town',
+    city: 'Bhavani',
+    state: 'Tamil Nadu',
+    pincode: '638301',
+    emergencyContactName: 'S. Vasanthi (Wife)',
+    emergencyContactNumber: '9876522334',
+    licenseNumber: 'TN-36-2012-005667',
+    licenseExpiry: '2028-12-10',
+    experience: 15,
+    joiningDate: '2015-05-15',
+    status: 'active',
+    shift: 'General Shift (07:30 AM - 05:00 PM)',
+    salary: 35000,
+    department: 'Transport & Fleet Logistics',
+    aadhaarNumber: 'XXXX XXXX 9931',
+    drivingBadgeNumber: 'TN36-BDG-2015-102',
+    profilePhoto: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=300&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Mohan',
+    email: 'mohan@driver.com',
+    phone: '9876543205',
+    alternatePhone: '9443678901',
+    gender: 'Male',
+    dateOfBirth: '1991-06-25',
+    bloodGroup: 'A-',
+    address: '102, Avinashi Road, Peelamedu',
+    city: 'Coimbatore',
+    state: 'Tamil Nadu',
+    pincode: '641004',
+    emergencyContactName: 'M. Radhika (Wife)',
+    emergencyContactNumber: '9876566778',
+    licenseNumber: 'TN-38-2017-007889',
+    licenseExpiry: '2032-06-25',
+    experience: 8,
+    joiningDate: '2018-09-20',
+    status: 'active',
+    shift: 'Morning Shift (06:00 AM - 02:00 PM)',
+    salary: 29800,
+    department: 'Transport & Fleet Logistics',
+    aadhaarNumber: 'XXXX XXXX 5520',
+    drivingBadgeNumber: 'TN38-BDG-2018-776',
+    profilePhoto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Rajendran',
+    email: 'rajendran@driver.com',
+    phone: '9876543206',
+    alternatePhone: '9443901234',
+    gender: 'Male',
+    dateOfBirth: '1980-09-08',
+    bloodGroup: 'B-',
+    address: '67, Kamaraj Nagar',
+    city: 'Gobichettipalayam',
+    state: 'Tamil Nadu',
+    pincode: '638452',
+    emergencyContactName: 'R. Sumathi (Wife)',
+    emergencyContactNumber: '9876533445',
+    licenseNumber: 'TN-36-2010-008990',
+    licenseExpiry: '2027-09-08',
+    experience: 16,
+    joiningDate: '2014-08-01',
+    status: 'active',
+    shift: 'General Shift (07:30 AM - 05:00 PM)',
+    salary: 36000,
+    department: 'Transport & Fleet Logistics',
+    aadhaarNumber: 'XXXX XXXX 1145',
+    drivingBadgeNumber: 'TN36-BDG-2014-045',
+    profilePhoto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Manikandan',
+    email: 'manikandan@driver.com',
+    phone: '9876543207',
+    alternatePhone: '9443012345',
+    gender: 'Male',
+    dateOfBirth: '1993-01-15',
+    bloodGroup: 'O+',
+    address: '34, Sathy-Erode Main Highway',
+    city: 'Puliyampatti',
+    state: 'Tamil Nadu',
+    pincode: '638459',
+    emergencyContactName: 'M. Anand (Brother)',
+    emergencyContactNumber: '9876577889',
+    licenseNumber: 'TN-38-2019-001122',
+    licenseExpiry: '2034-01-15',
+    experience: 6,
+    joiningDate: '2020-02-10',
+    status: 'active',
+    shift: 'Morning Shift (06:00 AM - 02:00 PM)',
+    salary: 28500,
+    department: 'Transport & Fleet Logistics',
+    aadhaarNumber: 'XXXX XXXX 8301',
+    drivingBadgeNumber: 'TN38-BDG-2020-551',
+    profilePhoto: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Sivakumar',
+    email: 'sivakumar@driver.com',
+    phone: '9876543208',
+    alternatePhone: '9443123456',
+    gender: 'Male',
+    dateOfBirth: '1986-07-30',
+    bloodGroup: 'AB-',
+    address: '19, Netuven Nagar',
+    city: 'Tiruppur',
+    state: 'Tamil Nadu',
+    pincode: '641604',
+    emergencyContactName: 'S. Geetha (Wife)',
+    emergencyContactNumber: '9876544556',
+    licenseNumber: 'TN-39-2014-003344',
+    licenseExpiry: '2029-07-29',
+    experience: 11,
+    joiningDate: '2017-11-01',
+    status: 'active',
+    shift: 'General Shift (07:30 AM - 05:00 PM)',
+    salary: 31500,
+    department: 'Transport & Fleet Logistics',
+    aadhaarNumber: 'XXXX XXXX 2498',
+    drivingBadgeNumber: 'TN39-BDG-2017-889',
+    profilePhoto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&auto=format&fit=crop&q=80'
+  },
+  {
+    name: 'Velmurugan',
+    email: 'velmurugan@driver.com',
+    phone: '9876543209',
+    alternatePhone: '9443234567',
+    gender: 'Male',
+    dateOfBirth: '1985-02-18',
+    bloodGroup: 'O+',
+    address: '56, College Road Extension',
+    city: 'Sathyamangalam',
+    state: 'Tamil Nadu',
+    pincode: '638401',
+    emergencyContactName: 'V. Parvathi (Wife)',
+    emergencyContactNumber: '9876599001',
+    licenseNumber: 'TN-38-2013-005566',
+    licenseExpiry: '2028-02-17',
+    experience: 13,
+    joiningDate: '2016-04-12',
+    status: 'active',
+    shift: 'Morning Shift (06:00 AM - 02:00 PM)',
+    salary: 33500,
+    department: 'Transport & Fleet Logistics',
+    aadhaarNumber: 'XXXX XXXX 6712',
+    drivingBadgeNumber: 'TN38-BDG-2016-304',
+    profilePhoto: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=300&auto=format&fit=crop&q=80'
+  }
 ];
+
+const driverNames = driverProfilesData.map(d => d.name);
 
 const pickupPointData = [
   { name: 'Annur Bus Stand', latitude: 11.2333, longitude: 77.1333, arrivalTime: '07:00 AM' },
@@ -81,7 +341,7 @@ const seedAll = async () => {
 
     console.log('🧹 Clearing existing collections for a clean seed...');
     await Promise.all([
-      User.deleteMany({ email: { $nin: ['admin@admin.com', 'murugan@driver.com', 'arun@student.com'] } }),
+      User.deleteMany({ email: { $nin: ['admin@admin.com', 'arun@student.com'] } }),
       Student.deleteMany({}),
       Driver.deleteMany({}),
       Bus.deleteMany({}),
@@ -143,35 +403,26 @@ const seedAll = async () => {
     }
     console.log(`✅ Seeded ${createdPickupPoints.length} Pickup Points.`);
 
-    // 4. Create 10 Drivers
-    const createdDrivers = await Driver.insertMany(driverNames.map((name, i) => ({
-      name,
+    // 4. Create 10 Drivers with Full Professional Profiles
+    const createdDrivers = await Driver.insertMany(driverProfilesData.map((data, i) => ({
+      ...data,
       employeeId: `DRV-${101 + i}`,
-      email: `${name.toLowerCase()}@driver.com`,
-      phone: `98765432${String(i).padStart(2, '0')}`,
-      licenseNumber: `TN-38-2018-000${10 + i}`,
-      licenseExpiry: '2032-05-20',
-      experience: 5 + (i % 6),
-      salary: 28000 + i * 1000,
-      status: 'active',
       assignedRoute: createdRoutes[i % 5]._id
     })));
-    console.log(`✅ Seeded ${createdDrivers.length} Drivers.`);
+    console.log(`✅ Seeded ${createdDrivers.length} Drivers with Complete Profiles.`);
 
     for (const d of createdDrivers) {
-      let u = await User.findOne({ email: d.email });
-      if (!u) {
-        await User.create({
-          name: d.name,
-          email: d.email,
-          password: 'Driver@123',
-          role: 'driver',
-          phone: d.phone,
-          status: 'active'
-        });
-      }
+      await User.deleteMany({ email: d.email });
+      await User.create({
+        name: d.name,
+        email: d.email,
+        password: 'Driver@123',
+        role: 'driver',
+        phone: d.phone,
+        status: 'active'
+      });
     }
-    console.log(`✅ Ensured User login accounts exist for all ${createdDrivers.length} Drivers.`);
+    console.log(`✅ Ensured synchronized User login accounts exist for all ${createdDrivers.length} Drivers.`);
 
     // 5. Create 10 Buses (BUS-A to BUS-J, 52 seats capacity)
     const createdBuses = await Bus.insertMany(busLabels.map((label, i) => ({

@@ -264,22 +264,44 @@ exports.getDriverMe = async (req, res, next) => {
       ? (driver.assignedRoute.routeName || driver.assignedRoute.routeCode) 
       : (driver.assignedRouteId ? driver.assignedRouteId.toString() : 'Not Assigned');
 
+    let maskedAadhaar = '';
+    if (driver.aadhaarNumber) {
+      maskedAadhaar = driver.aadhaarNumber.includes('X') 
+        ? driver.aadhaarNumber 
+        : `XXXX XXXX ${driver.aadhaarNumber.slice(-4)}`;
+    }
+
     return res.status(200).json({
       success: true,
       data: {
         id: driver._id,
+        profilePhoto: driver.profilePhoto || '',
         name: driver.name || '',
         employeeId: driver.employeeId || '',
         email: driver.email || '',
         phone: driver.phone || '',
+        alternatePhone: driver.alternatePhone || '',
+        gender: driver.gender || '',
+        dateOfBirth: driver.dateOfBirth || '',
+        bloodGroup: driver.bloodGroup || '',
         address: driver.address || '',
-        experience: driver.experience ?? 0,
+        city: driver.city || '',
+        state: driver.state || '',
+        pincode: driver.pincode || '',
+        emergencyContactName: driver.emergencyContactName || '',
+        emergencyContactNumber: driver.emergencyContactNumber || '',
         licenseNumber: driver.licenseNumber || '',
         licenseExpiry: driver.licenseExpiry || '',
+        experience: driver.experience ?? 0,
+        joiningDate: driver.joiningDate || '',
         assignedBus: assignedBusValue,
         assignedRoute: assignedRouteValue,
         status: driver.status || 'active',
-        profilePhoto: driver.profilePhoto || ''
+        shift: driver.shift || '',
+        salary: driver.salary ?? 0,
+        department: driver.department || '',
+        aadhaarNumber: maskedAadhaar,
+        drivingBadgeNumber: driver.drivingBadgeNumber || ''
       }
     });
   } catch (error) {

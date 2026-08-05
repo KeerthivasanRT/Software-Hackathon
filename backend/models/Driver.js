@@ -24,6 +24,46 @@ const driverSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please add phone number']
     },
+    alternatePhone: {
+      type: String,
+      default: ''
+    },
+    gender: {
+      type: String,
+      default: 'Male'
+    },
+    dateOfBirth: {
+      type: String,
+      default: ''
+    },
+    bloodGroup: {
+      type: String,
+      default: 'O+'
+    },
+    address: {
+      type: String,
+      default: 'Sathyamangalam, Tamil Nadu'
+    },
+    city: {
+      type: String,
+      default: 'Sathyamangalam'
+    },
+    state: {
+      type: String,
+      default: 'Tamil Nadu'
+    },
+    pincode: {
+      type: String,
+      default: '638401'
+    },
+    emergencyContactName: {
+      type: String,
+      default: ''
+    },
+    emergencyContactNumber: {
+      type: String,
+      default: ''
+    },
     licenseNumber: {
       type: String,
       required: [true, 'Please add license number'],
@@ -37,11 +77,7 @@ const driverSchema = new mongoose.Schema(
       type: Number,
       default: 5
     },
-    address: {
-      type: String,
-      default: 'Sathyamangalam, Tamil Nadu'
-    },
-    profilePhoto: {
+    joiningDate: {
       type: String,
       default: ''
     },
@@ -55,13 +91,33 @@ const driverSchema = new mongoose.Schema(
       ref: 'Bus',
       default: null
     },
+    shift: {
+      type: String,
+      default: 'Morning (06:00 AM - 02:00 PM)'
+    },
     salary: {
       type: Number,
       default: 28000
     },
+    department: {
+      type: String,
+      default: 'Transport & Fleet Logistics'
+    },
+    aadhaarNumber: {
+      type: String,
+      default: ''
+    },
+    drivingBadgeNumber: {
+      type: String,
+      default: ''
+    },
+    profilePhoto: {
+      type: String,
+      default: ''
+    },
     status: {
       type: String,
-      enum: ['active', 'inactive'],
+      enum: ['active', 'inactive', 'on-duty'],
       default: 'active'
     }
   },
