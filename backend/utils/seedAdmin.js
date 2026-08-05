@@ -18,7 +18,7 @@ const seedUsers = [
   {
     name: 'R. Murugan',
     email: 'murugan@driver.com',
-    password: 'password123',
+    password: 'Murugan@123',
     role: 'driver',
     phone: '9876543211',
     status: 'active'
@@ -26,7 +26,7 @@ const seedUsers = [
   {
     name: 'Arun Kumar',
     email: 'arun@student.com',
-    password: 'Student@123',
+    password: 'Arun@123',
     role: 'student',
     phone: '9876543212',
     status: 'active'
@@ -37,7 +37,7 @@ const runSeed = async () => {
   try {
     await connectDB();
 
-    console.log('🌱 Seeding Phase 1 Default Users...');
+    console.log('🌱 Seeding & Reserving Default User Credentials...');
 
     for (const userData of seedUsers) {
       const salt = await bcrypt.genSalt(10);
@@ -47,21 +47,29 @@ const runSeed = async () => {
       if (existingUser) {
         await User.updateOne(
           { _id: existingUser._id },
-          { $set: { ...userData, password: hashedPassword } }
+          { $set: { password: hashedPassword } }
         );
-        console.log(`🔄 Updated existing account & password hash: ${userData.name} (${userData.role}) - ${userData.email}`);
+        console.log(`🔄 Updated existing account password hash: ${userData.email}`);
       } else {
         await User.create(userData);
-        console.log(`✅ Seeded account: ${userData.name} (${userData.role}) - ${userData.email}`);
+        console.log(`✅ Seeded account: ${userData.email}`);
       }
     }
 
-    console.log('🎉 Phase 1 User Seeding Complete.');
-    console.log('\n=======================================================');
-    console.log('Driver:');
+    console.log('🎉 User Credentials Seeding Complete.');
+    console.log('\n========================================');
+    console.log('DEFAULT LOGIN CREDENTIALS');
+    console.log('========================================\n');
+    console.log('ADMIN');
+    console.log('Email: admin@admin.com');
+    console.log('Password: Admin@123\n');
+    console.log('DRIVER');
     console.log('Email: murugan@driver.com');
-    console.log('Password: password123');
-    console.log('=======================================================');
+    console.log('Password: Murugan@123\n');
+    console.log('STUDENT');
+    console.log('Email: arun@student.com');
+    console.log('Password: Arun@123\n');
+    console.log('========================================');
   } catch (error) {
     console.error('❌ Seeding Error:', error.message);
   }

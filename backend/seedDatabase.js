@@ -363,15 +363,35 @@ const seedAll = async () => {
 
     console.log('🌱 Starting Fast Bulk BIT MongoDB Seed...');
 
-    // 1. Admin User
-    let adminUser = await User.findOne({ role: 'admin' });
-    if (!adminUser) {
+    // 1. Admin & Student Users
+    const saltAdmin = await bcrypt.genSalt(10);
+    const hashedAdminPass = await bcrypt.hash('Admin@123', saltAdmin);
+    let adminUser = await User.findOne({ email: 'admin@admin.com' }) || await User.findOne({ role: 'admin' });
+    if (adminUser) {
+      await User.updateOne({ _id: adminUser._id }, { $set: { password: hashedAdminPass } });
+    } else {
       adminUser = await User.create({
         name: 'Admin User',
         email: 'admin@admin.com',
         password: 'Admin@123',
         role: 'admin',
         phone: '9876543210',
+        status: 'active'
+      });
+    }
+
+    const saltStudent = await bcrypt.genSalt(10);
+    const hashedStudentPass = await bcrypt.hash('Arun@123', saltStudent);
+    let studentUser = await User.findOne({ email: 'arun@student.com' });
+    if (studentUser) {
+      await User.updateOne({ _id: studentUser._id }, { $set: { password: hashedStudentPass } });
+    } else {
+      await User.create({
+        name: 'Arun Kumar',
+        email: 'arun@student.com',
+        password: 'Arun@123',
+        role: 'student',
+        phone: '9876543212',
         status: 'active'
       });
     }
@@ -414,19 +434,20 @@ const seedAll = async () => {
 
     for (const d of createdDrivers) {
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash('password123', salt);
+      const pass = 'Murugan@123';
+      const hashedPassword = await bcrypt.hash(pass, salt);
       const existingUser = await User.findOne({ email: d.email });
 
       if (existingUser) {
         await User.updateOne(
           { _id: existingUser._id },
-          { $set: { name: d.name, phone: d.phone, role: 'driver', status: 'active', password: hashedPassword } }
+          { $set: { password: hashedPassword } }
         );
       } else {
         await User.create({
           name: d.name,
           email: d.email,
-          password: 'password123',
+          password: pass,
           role: 'driver',
           phone: d.phone,
           status: 'active'
@@ -712,11 +733,19 @@ const seedAll = async () => {
 
     console.log('=======================================================');
     console.log(' 🎉 FAST BULK BIT MONGODB ATLAS SEED COMPLETED!');
-    console.log('=======================================================');
-    console.log('Driver:');
+    console.log('\n========================================');
+    console.log('DEFAULT LOGIN CREDENTIALS');
+    console.log('========================================\n');
+    console.log('ADMIN');
+    console.log('Email: admin@admin.com');
+    console.log('Password: Admin@123\n');
+    console.log('DRIVER');
     console.log('Email: murugan@driver.com');
-    console.log('Password: password123');
-    console.log('=======================================================');
+    console.log('Password: Murugan@123\n');
+    console.log('STUDENT');
+    console.log('Email: arun@student.com');
+    console.log('Password: Arun@123\n');
+    console.log('========================================');
   } catch (error) {
     console.error('❌ Seeding Failed:', error);
   }
